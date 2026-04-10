@@ -1,0 +1,68 @@
+Configs: {
+	Reworks: {
+		DisplayName: Vanilla Changes
+
+		AntiGravityHookRework: {
+			Label: Anti-Gravity Hook
+			Tooltip: Allows free movement within a radius around each hook.
+		}
+
+		VoodooRework: {
+			Label: Voodoo Dolls
+			Tooltip:
+				'''
+				Voodoo dolls are sold by Clothier instead of being drops.
+				Voodoo dolls are inventory toggles. Adds more Voodoo dolls.
+				Resprites Voodoo dolls. NPCs are unhappy if you have their active doll.
+				'''
+		}
+
+		Headers: {
+			Items: Item Changes
+			Other: Other Changes
+		}
+
+		BuffStationsSave: {
+			Label: Undying Buff Stations
+			Tooltip: Buffs that last forever also persist through death.
+		}
+
+		EnchantedSwordRework: {
+			Label: Enchanted Sword
+			Tooltip:
+				'''
+				The Enchanted Sword's projectile is more interesting:
+				It can hit 3 enemies
+				New behavior:
+				It slashes downwards and then upwards
+				It then either sweeps or lunges
+				If it lunges and has not hit anything yet, remaining pierce is removed and a crit is guaranteed
+				If it sweeps, it can hit an additional 3 enemies
+				'''
+		}
+	}
+}
+
+Items: {
+	VoodooInactiveTip: <right> to invoke
+	VoodooActiveTip:
+		'''
+		{$ItemTooltip.GuideVoodooDoll}
+		<right> to stifle
+		'''
+	GuideVoodooDoll_Off.DisplayName: Guide Doll
+	ClothierVoodooDoll_Off.DisplayName: Clothier Doll
+	MechanicVoodooDoll_Off.DisplayName: Mechanic Doll
+	MechanicVoodooDoll_On.DisplayName: Mechanic Voodoo Doll
+	GoblinVoodooDoll_On.DisplayName: Goblin Voodoo Doll
+	GoblinVoodooDoll_Off.DisplayName: Goblin Doll
+}
+
+Chats: {
+	VoodooUnhappy: {
+		Guide: You didn't happen to see a doll, did you?
+		Clothier: All my soul is ablaze and I stand powerless.
+		Mechanic: Something feels wrong! It's like I'm back in that dungeon.
+		GoblinTinkerer: Do you hear a ringing?
+	}
+}
