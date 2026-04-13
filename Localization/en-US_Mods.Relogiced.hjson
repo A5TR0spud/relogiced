@@ -40,6 +40,15 @@ Configs: {
 				If it sweeps, it can hit an additional 3 enemies
 				'''
 		}
+
+		LightingRework: {
+			Label: Lighting Rework
+			Tooltip:
+			'''
+			A [c/FF7777:potentially laggy] rework to the lighting engine that
+			makes lights circular and adds rudimentary raycasting.
+			'''
+		}
 	}
 }
 

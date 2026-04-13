@@ -20,4 +20,7 @@ public class Reworks : ModConfig
     [Header("Other")]
     [ReloadRequired] [DefaultValue(true)]
     public bool BuffStationsSave;
+    
+    [ReloadRequired] [DefaultValue(false)]
+    public bool LightingRework;
 }

@@ -63,9 +63,14 @@ public class EnchantedSwordProjectile : GlobalProjectile
 
     public override void ModifyDamageHitbox(Projectile proj, ref Rectangle hitbox)
     {
-        Vector2 off = proj.rotation.ToRotationVector2() * 16f;
+        bool spinAttack = proj.ai[0] >= 35 && proj.ai[1] == 0;
+        bool lungeAttack = proj.ai[0] >= 35 && proj.ai[1] != 0;
+        float offSize = lungeAttack ? 24f : 16f;
+        Vector2 off = proj.rotation.ToRotationVector2() * offSize;
         hitbox.X += (int)off.X;
         hitbox.Y += (int)off.Y;
+        int bloat = spinAttack ? 8 : lungeAttack ? 0 : 4;
+        hitbox.Inflate(bloat, bloat);
     }
 
     public override bool PreDraw(Projectile proj, ref Color lightColor)
@@ -113,7 +118,7 @@ public class EnchantedSwordProjectile : GlobalProjectile
             proj.velocity = proj.velocity.SafeNormalize(proj.rotation.ToRotationVector2()) * 8f;
             proj.rotation = (float)Math.Atan2(proj.velocity.Y, proj.velocity.X) + projDir * MathHelper.PiOver2;
             SoundStyle s = SoundID.Item1;
-            s = s.WithPitchOffset(Main.rand.NextFloat(-0.2f, 0.2f));
+            s = s.WithPitchOffset(Main.rand.NextFloat(-0.2f, 0.2f)).WithVolumeScale(0.5f);
             SoundEngine.PlaySound(s, proj.Center);
         }
 
@@ -121,7 +126,7 @@ public class EnchantedSwordProjectile : GlobalProjectile
         {
             proj.ResetLocalNPCHitImmunity();
             SoundStyle s1 = SoundID.Item7;
-            s1 = s1.WithPitchOffset(Main.rand.NextFloat(-0.2f, 0.2f));
+            s1 = s1.WithPitchOffset(Main.rand.NextFloat(-0.2f, 0.2f)).WithVolumeScale(0.5f);
             SoundEngine.PlaySound(s1, proj.Center);
             if (proj.ai[1] != 0)
             {
@@ -135,7 +140,7 @@ public class EnchantedSwordProjectile : GlobalProjectile
                 }
                 
                 SoundStyle s = SoundID.Item105;
-                s = s.WithVolumeScale(0.4f).WithPitchOffset(Main.rand.NextFloat(0.07f, 0.13f));
+                s = s.WithVolumeScale(0.3f).WithPitchOffset(Main.rand.NextFloat(0.15f, 0.25f));
                 SoundEngine.PlaySound(s, proj.Center);
             }
             else
@@ -143,7 +148,7 @@ public class EnchantedSwordProjectile : GlobalProjectile
                 proj.ai[2] = 2.5f * projDir;
                 proj.penetrate = proj.maxPenetrate - 1;
                 SoundStyle s = SoundID.Item15;
-                s = s.WithVolumeScale(0.6f).WithPitchOffset(Main.rand.NextFloat(0.25f, 0.33f));
+                s = s.WithVolumeScale(0.6f).WithPitchOffset(Main.rand.NextFloat(0.4f, 0.5f));
                 SoundEngine.PlaySound(s, proj.Center);
             }
         }

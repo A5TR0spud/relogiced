@@ -1,12 +1,11 @@
 using System;
-using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace Relogiced.Content.Other;
+namespace Relogiced.Content.Other.UndyingBuffs;
 
 public class BuffStationSavePlayer : ModPlayer
 {
