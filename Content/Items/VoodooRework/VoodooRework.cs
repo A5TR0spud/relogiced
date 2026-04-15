@@ -9,21 +9,21 @@ using Terraria.ModLoader;
 
 namespace Relogiced.Content.Items.VoodooRework;
 
-public class VoodooRework : ILoadable
+public class VoodooRework : ModSystem
 {
-    public bool IsLoadingEnabled(Mod mod)
+    public override bool IsLoadingEnabled(Mod mod)
     {
-        return Relogiced.Config_Reworks.VoodooRework;
+        return Relogiced.ConfigAssorted.VoodooRework;
     }
 
-    public void Load(Mod mod)
+    public override void Load()
     {
-        TextureAssets.Item[ItemID.GuideVoodooDoll] = mod.Assets.Request<Texture2D>("Content/Items/VoodooRework/GuideVoodooDoll_On");
-        TextureAssets.Item[ItemID.ClothierVoodooDoll] = mod.Assets.Request<Texture2D>("Content/Items/VoodooRework/ClothierVoodooDoll_On");
+        TextureAssets.Item[ItemID.GuideVoodooDoll] = Mod.Assets.Request<Texture2D>("Content/Items/VoodooRework/GuideVoodooDoll_On");
+        TextureAssets.Item[ItemID.ClothierVoodooDoll] = Mod.Assets.Request<Texture2D>("Content/Items/VoodooRework/ClothierVoodooDoll_On");
         IL_ShopHelper.ProcessMood += IL_ShopHelperOnProcessMood;
     }
 
-    public void Unload()
+    public override void Unload()
     {
         RestoreItemSprite(ItemID.GuideVoodooDoll);
         RestoreItemSprite(ItemID.ClothierVoodooDoll);

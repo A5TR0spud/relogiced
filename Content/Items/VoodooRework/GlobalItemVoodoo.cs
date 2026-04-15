@@ -9,7 +9,7 @@ public class GlobalItemVoodoo : GlobalItem
 {
     public override bool IsLoadingEnabled(Mod mod)
     {
-        return Relogiced.Config_Reworks.VoodooRework;
+        return Relogiced.ConfigAssorted.VoodooRework;
     }
 
     private int GetValue(Item item)

@@ -1,41 +1,36 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
-using Mono.Collections.Generic;
 using MonoMod.Cil;
 using ReLogic.Threading;
-using Terraria;
 using Terraria.Graphics.Light;
 using Terraria.ModLoader;
 using Terraria.Utilities;
 
 namespace Relogiced.Content.Other.Lighting;
 
-public class LightingRework : ILoadable
+public class LightingRework : ModSystem
 {
 	private const float Cutoff = 0.0185f;
-    public bool IsLoadingEnabled(Mod mod)
+    public override bool IsLoadingEnabled(Mod mod)
     {
-        return Relogiced.Config_Reworks.LightingRework;
+        return Relogiced.ConfigClient.LightingRework;
     }
     
-    public void Load(Mod mod)
+    public override void Load()
     {
 	    IL_LightMap.Blur += IL_LightMapOnBlur;
     }
 
-    public void Unload()
+    public override void Unload()
     {
 	    IL_LightMap.Blur -= IL_LightMapOnBlur;
     }
 
     struct LightSource
     {
-	    public Vector2 pos = Vector2.Zero;
+	    public Point pos = Point.Zero;
 	    public Vector3 col = Vector3.Zero;
 	    public float bri = 0f;
 	    public int idx = 0;
@@ -44,9 +39,6 @@ public class LightingRework : ILoadable
 	    {
 	    }
     }
-
-    private static List<Vector3> ColorCache = [];
-    private static List<LightSource> LightsCache = [];
 
     private void IL_LightMapOnBlur(ILContext il)
     {
@@ -79,7 +71,6 @@ public class LightingRework : ILoadable
 			{
 				LightSource[] lights = new LightSource[_colors.Length];
 				int lightsCount = 0;
-				Vector3[] beforecolors = _colors;
 				Vector3[] colors = _colors;
 				
 				GetLightsPass();
@@ -119,9 +110,9 @@ public class LightingRework : ILoadable
 										3 => 1,
 										_ => 0
 									});
-									if (t < 0 || t >= beforecolors.Length) continue;
+									if (t < 0 || t >= colors.Length) continue;
 									samenessT++;
-									if (beforecolors[t].X >= r && beforecolors[t].Y >= g && beforecolors[t].Z >= b)
+									if (colors[t].X >= r && colors[t].Y >= g && colors[t].Z >= b)
 										sameness++;
 									if (sameness < samenessT) break;
 								}
@@ -138,7 +129,7 @@ public class LightingRework : ILoadable
 						}
 					}//, (object)null);
 				}
-
+				
 				void DrawLightsPass()
 				{
 					FastParallel.For(0, lightsCount, (ParallelForAction)delegate(int start,
@@ -149,9 +140,21 @@ public class LightingRework : ILoadable
 							LightSource ls = lights[i];
 							
 							float radius = (float)Math.Log(Cutoff / ls.bri, decayAir);
-							float circumference = 2f * radius * MathHelper.Pi;
-							Vector2 delta;
 							Vector3 rayLight;
+							Vector2 delta;
+							/*int rI = (int)Math.Ceiling(radius);
+							Point target;
+							for (int j = 0; j <= 4 * rI; j++)
+							{
+								int u = j % (2 * rI) - rI;
+								int v = (j + rI) % (2 * rI) - rI;
+								int idx = ls.idx + IndexOf(u, v);
+								if (idx < 0 || idx >= colors.Length) continue;
+								target = new Point(u, v);
+								delta = Point.Zero;
+								rayLight = ls.col;
+							}*/
+							float circumference = 2f * radius * MathHelper.Pi;
 							int circumsteps = (int)Math.Round(circumference);
 							float circumstep = MathHelper.TwoPi / circumsteps;
 							float rot;
@@ -215,7 +218,8 @@ public class LightingRework : ILoadable
 				);
 				float value(Vector3 color) => Math.Max(color.X, Math.Max(color.Y, color.Z));
 				int IndexOf(int x, int y) => x * self.Height + y;
-				Vector2 PositionOf(int index) => new ((int)(index / self.Height), index % self.Height);
+				Point PositionOf(int index) => new (index / self.Height, index % self.Height);
+				float LengthSquaredOf(Point p) => p.X*p.X+p.Y*p.Y;
 			});
 	    }
 	    catch

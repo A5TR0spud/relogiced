@@ -3,7 +3,7 @@ using Terraria.ModLoader.Config;
 
 namespace Relogiced.Configs;
 
-public class Reworks : ModConfig
+public class Assorted : ModConfig
 {
     public override ConfigScope Mode => ConfigScope.ServerSide;
     
@@ -13,14 +13,14 @@ public class Reworks : ModConfig
     
     [ReloadRequired] [DefaultValue(true)]
     public bool VoodooRework;
-
+    
     [ReloadRequired] [DefaultValue(true)]
-    public bool EnchantedSwordRework;
+    public bool ShopChanges;
 
     [Header("Other")]
     [ReloadRequired] [DefaultValue(true)]
     public bool BuffStationsSave;
     
-    [ReloadRequired] [DefaultValue(false)]
-    public bool LightingRework;
+    [ReloadRequired] [DefaultValue(true)]
+    public bool LightingRebalance;
 }

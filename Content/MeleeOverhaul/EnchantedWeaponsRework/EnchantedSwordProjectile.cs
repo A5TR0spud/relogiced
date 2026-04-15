@@ -9,7 +9,7 @@ using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace Relogiced.Content.Items.EnchantedSwordRework;
+namespace Relogiced.Content.MeleeOverhaul.EnchantedWeaponsRework;
 
 public class EnchantedSwordProjectile : GlobalProjectile
 {
@@ -21,7 +21,7 @@ public class EnchantedSwordProjectile : GlobalProjectile
 
     public override bool IsLoadingEnabled(Mod mod)
     {
-        return Relogiced.Config_Reworks.EnchantedSwordRework;
+        return Relogiced.ConfigMeleeOverhaul.EnchantedSwordRework;
     }
 
     public override bool AppliesToEntity(Projectile entity, bool lateInstantiation)
@@ -35,6 +35,7 @@ public class EnchantedSwordProjectile : GlobalProjectile
         proj.penetrate = 3;
         proj.usesLocalNPCImmunity = true;
         proj.localNPCHitCooldown = -1;
+        proj.damage = (int)(proj.damage * 0.8f + 1);
     }
 
     public override void OnSpawn(Projectile proj, IEntitySource source)
@@ -50,6 +51,7 @@ public class EnchantedSwordProjectile : GlobalProjectile
             proj.maxPenetrate++;
             proj.penetrate++;
         }
+        proj.netUpdate = true;
     }
 
     public override bool? CanHitNPC(Projectile proj, NPC target)

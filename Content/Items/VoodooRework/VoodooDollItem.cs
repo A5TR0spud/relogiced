@@ -12,7 +12,7 @@ public abstract class VoodooDollItem : ModItem
     public abstract int OtherVariant();
     public override bool IsLoadingEnabled(Mod mod)
     {
-        return Relogiced.Config_Reworks.VoodooRework;// && !GetType().Name.Equals("VoodooDollItem");
+        return Relogiced.ConfigAssorted.VoodooRework;
     }
 
     public override LocalizedText Tooltip => AssociatedNPC() == 0

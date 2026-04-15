@@ -1,6 +1,11 @@
 Configs: {
-	Reworks: {
-		DisplayName: Vanilla Changes
+	Assorted: {
+		DisplayName: Assorted Changes
+
+		Headers: {
+			Items: Item Changes
+			Other: Other Changes
+		}
 
 		AntiGravityHookRework: {
 			Label: Anti-Gravity Hook
@@ -17,37 +22,53 @@ Configs: {
 				'''
 		}
 
-		Headers: {
-			Items: Item Changes
-			Other: Other Changes
-		}
-
 		BuffStationsSave: {
 			Label: Undying Buff Stations
 			Tooltip: Buffs that last forever also persist through death.
 		}
 
-		EnchantedSwordRework: {
-			Label: Enchanted Sword
+		LightingRebalance: {
+			Label: Lighting Rebalance
 			Tooltip:
 				'''
-				The Enchanted Sword's projectile is more interesting:
-				It can hit 3 enemies
-				New behavior:
-				It slashes downwards and then upwards
-				It then either sweeps or lunges
-				If it lunges and has not hit anything yet, remaining pierce is removed and a crit is guaranteed
-				If it sweeps, it can hit an additional 3 enemies
+				Makes certain lights brighter or dimmer.
+				For example, the Fairy Glowstick is 137% as bright.
 				'''
 		}
+
+		ShopChanges: {
+			Label: Shop Changes
+			Tooltip: Rearranges and expands some NPC shops.
+		}
+	}
+
+	Client: {
+		Headers.Experiments: Experiments
 
 		LightingRework: {
 			Label: Lighting Rework
 			Tooltip:
-			'''
-			A [c/FF7777:potentially laggy] rework to the lighting engine that
-			makes lights circular and adds rudimentary raycasting.
-			'''
+				'''
+				A [c/FF7777:potentially laggy] rework to the lighting engine that
+				makes lights circular and adds rudimentary raycasting.
+				'''
+		}
+
+		DisplayName: Client
+	}
+
+	MeleeOverhaul: {
+		DisplayName: Melee Overhaul
+		Headers.Items: Item Changes
+
+		EnchantedSwordRework: {
+			Label: Enchanted Sword & Boomerang
+			Tooltip:
+				'''
+				The Enchanted Sword's projectile has new behavior.
+				Enchanted Boomerang ricochets between enemies.
+				Trimarang also gets a minor buff.
+				'''
 		}
 	}
 }

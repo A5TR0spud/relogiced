@@ -8,7 +8,7 @@ public class RelogicedUtil
 {
     public static void ChangeItemTypeFromRMB(Item item, int newItemID, bool unlockSound = false)
     {
-        if (!ChangeItemType(item, newItemID) || !Main.mouseRightRelease) return;
+        if (!Main.mouseRightRelease || !ChangeItemType(item, newItemID)) return;
         SoundEngine.PlaySound(unlockSound ? SoundID.Unlock : SoundID.Grab);
         Main.stackSplit = 30;
         Main.mouseRightRelease = false;

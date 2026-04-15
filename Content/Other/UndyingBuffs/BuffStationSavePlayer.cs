@@ -11,7 +11,7 @@ public class BuffStationSavePlayer : ModPlayer
 {
     public override bool IsLoadingEnabled(Mod mod)
     {
-        return Relogiced.Config_Reworks.BuffStationsSave;
+        return Relogiced.ConfigAssorted.BuffStationsSave;
     }
 
     public override void Load()

@@ -11,7 +11,7 @@ public class AntiGravHookPlayer : ModPlayer
 {
     public override bool IsLoadingEnabled(Mod mod)
     {
-        return Relogiced.Config_Reworks.AntiGravityHookRework;
+        return Relogiced.ConfigAssorted.AntiGravityHookRework;
     }
 
     public override void Load()

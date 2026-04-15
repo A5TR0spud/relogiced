@@ -10,7 +10,7 @@ public class ModVoodooPlayer : ModPlayer
 {
     public override bool IsLoadingEnabled(Mod mod)
     {
-        return Relogiced.Config_Reworks.VoodooRework;
+        return Relogiced.ConfigAssorted.VoodooRework;
     }
 /*
     public override void Load()
