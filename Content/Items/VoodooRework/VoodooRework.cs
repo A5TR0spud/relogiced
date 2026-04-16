@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework.Graphics;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using Relogiced.Other;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ID;
@@ -18,15 +19,15 @@ public class VoodooRework : ModSystem
 
     public override void Load()
     {
-        TextureAssets.Item[ItemID.GuideVoodooDoll] = Mod.Assets.Request<Texture2D>("Content/Items/VoodooRework/GuideVoodooDoll_On");
-        TextureAssets.Item[ItemID.ClothierVoodooDoll] = Mod.Assets.Request<Texture2D>("Content/Items/VoodooRework/ClothierVoodooDoll_On");
+        RelogicedUtil.ChangeItemSprite(ItemID.GuideVoodooDoll, "Content/Items/VoodooRework/GuideVoodooDoll_On");
+        RelogicedUtil.ChangeItemSprite(ItemID.ClothierVoodooDoll, "Content/Items/VoodooRework/ClothierVoodooDoll_On");
         IL_ShopHelper.ProcessMood += IL_ShopHelperOnProcessMood;
     }
 
     public override void Unload()
     {
-        RestoreItemSprite(ItemID.GuideVoodooDoll);
-        RestoreItemSprite(ItemID.ClothierVoodooDoll);
+        RelogicedUtil.RestoreItemSprite(ItemID.GuideVoodooDoll);
+        RelogicedUtil.RestoreItemSprite(ItemID.ClothierVoodooDoll);
         IL_ShopHelper.ProcessMood -= IL_ShopHelperOnProcessMood;
     }
 
@@ -64,10 +65,5 @@ public class VoodooRework : ModSystem
         {
             MonoModHooks.DumpIL(ModContent.GetInstance<Relogiced>(), il);
         }
-    }
-
-    private static void RestoreItemSprite(int item)
-    {
-        TextureAssets.Item[item] = Main.Assets.Request<Texture2D>("Images/Item_" + item);
     }
 }

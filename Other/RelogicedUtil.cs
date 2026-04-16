@@ -1,6 +1,9 @@
+using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.Audio;
+using Terraria.GameContent;
 using Terraria.ID;
+using Terraria.ModLoader;
 
 namespace Relogiced.Other;
 
@@ -20,5 +23,15 @@ public class RelogicedUtil
         item.ChangeItemType(newItemID);
         Recipe.FindRecipes();
         return true;
+    }
+
+    public static void ChangeItemSprite(int item, string suffix)
+    {
+        TextureAssets.Item[item] = Relogiced.Instance.Assets.Request<Texture2D>(suffix);
+    }
+
+    public static void RestoreItemSprite(int item)
+    {
+        TextureAssets.Item[item] = Main.Assets.Request<Texture2D>("Images/Item_" + item);
     }
 }

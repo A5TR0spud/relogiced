@@ -150,7 +150,7 @@ public class EnchantedSwordProjectile : GlobalProjectile
                 proj.ai[2] = 2.5f * projDir;
                 proj.penetrate = proj.maxPenetrate - 1;
                 SoundStyle s = SoundID.Item15;
-                s = s.WithVolumeScale(0.6f).WithPitchOffset(Main.rand.NextFloat(0.4f, 0.5f));
+                s = s.WithVolumeScale(1.2f).WithPitchOffset(Main.rand.NextFloat(0.28f, 0.42f));
                 SoundEngine.PlaySound(s, proj.Center);
             }
         }

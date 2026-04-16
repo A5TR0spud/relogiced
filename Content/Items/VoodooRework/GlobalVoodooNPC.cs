@@ -55,22 +55,19 @@ class GlobalVoodooNPC : GlobalNPC
     
     public override void ModifyNPCLoot(NPC npc, NPCLoot npcLoot)
     {
-        //if (npc.ModNPC != null) return;
-        npcLoot.RemoveWhere(i =>
+        foreach (var rule in npcLoot.Get())
         {
-            List<DropRateInfo> l = new List<DropRateInfo>();
-            DropRateInfoChainFeed dd = new DropRateInfoChainFeed();
-            i.ReportDroprates(l, dd);
-            for (int j = 0; j < l.Count; j++)
+            if (rule is not CommonDrop drop) continue;
+            if (drop.itemId == ItemID.ClothierVoodooDoll)
             {
-                if (l[j].itemId == ItemID.GuideVoodooDoll
-                    || l[j].itemId == ItemID.ClothierVoodooDoll)
-                {
-                    return true;
-                }
+                drop.itemId = ModContent.ItemType<ClothierVoodooDoll_Off>();
+                continue;
             }
-            return false;
-        });
+            if (drop.itemId == ItemID.GuideVoodooDoll)
+            {
+                drop.itemId = ModContent.ItemType<GuideVoodooDoll_Off>();
+            }
+        }
     }
     
     public override bool? CanBeHitByItem(NPC npc, Player player, Item item)

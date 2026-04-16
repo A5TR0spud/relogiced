@@ -16,7 +16,7 @@ Configs: {
 			Label: Voodoo Dolls
 			Tooltip:
 				'''
-				Voodoo dolls are sold by Clothier instead of being drops.
+				Voodoo dolls are sold by Clothier.
 				Voodoo dolls are inventory toggles. Adds more Voodoo dolls.
 				Resprites Voodoo dolls. NPCs are unhappy if you have their active doll.
 				'''
@@ -67,7 +67,20 @@ Configs: {
 				'''
 				The Enchanted Sword's projectile has new behavior.
 				Enchanted Boomerang ricochets between enemies.
-				Trimarang also gets a minor buff.
+				'''
+		}
+	}
+
+	MagicOverhaul: {
+		DisplayName: Magic Overhaul
+		Headers.Items: Item Changes
+
+		EarlyGameWeapons: {
+			Label: Early Game Weapons
+			Tooltip:
+				'''
+				Makes early mage more viable, such as by making Wand of Sparking craftable and
+				adding a Magic Wand sold by the Traveling Merchant alongside the Magic Hat.
 				'''
 		}
 	}
@@ -86,13 +99,20 @@ Items: {
 	MechanicVoodooDoll_On.DisplayName: Mechanic Voodoo Doll
 	GoblinVoodooDoll_On.DisplayName: Goblin Voodoo Doll
 	GoblinVoodooDoll_Off.DisplayName: Goblin Doll
+
+	MagicWand: {
+		Tooltip: ""
+		DisplayName: Magic Wand
+	}
 }
 
 Chats: {
 	VoodooUnhappy: {
 		Guide: You didn't happen to see a doll, did you?
-		Clothier: All my soul is ablaze and I stand powerless.
-		Mechanic: Something feels wrong! It's like I'm back in that dungeon.
+		Clothier: Mama always said you've got to put the past behind you before you can move on.
+		Mechanic: It feels cold, and dark...
 		GoblinTinkerer: Do you hear a ringing?
 	}
 }
+
+Projectiles.Suits.DisplayName: Suits

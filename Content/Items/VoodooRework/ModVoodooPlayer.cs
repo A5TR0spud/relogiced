@@ -12,30 +12,7 @@ public class ModVoodooPlayer : ModPlayer
     {
         return Relogiced.ConfigAssorted.VoodooRework;
     }
-/*
-    public override void Load()
-    {
-        On_Player.GetItemExpectedPrice += On_PlayerOnGetItemExpectedPrice;
-    }
 
-    public override void Unload()
-    {
-        On_Player.GetItemExpectedPrice -= On_PlayerOnGetItemExpectedPrice;
-    }
-
-    private void On_PlayerOnGetItemExpectedPrice(On_Player.orig_GetItemExpectedPrice orig, Player self, Item item, out long calcForSelling, out long calcForBuying)
-    {
-        orig.Invoke(self, item, out calcForSelling, out calcForBuying);
-        if (self.GetModPlayer<ModVoodooPlayer>().KillableNPCs.Contains(self.TalkNPC.type))
-        {
-            if (!item.buyOnce)
-                calcForBuying = (int)((float)calcForBuying * 1.2f);
-            if (item.isAShopItem)
-                calcForSelling = (int)((float)calcForSelling * 0.7f);
-            Main.shopSellbackHelper.Remove(item);
-        }
-    }
-    */
     public List<int> KillableNPCs = [];
 
     override public void ResetEffects()
