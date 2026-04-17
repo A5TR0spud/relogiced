@@ -32,3 +32,20 @@ public class EarlyGameMagic : ModSystem
         .Register();
     }
 }
+
+public class EarlyGameMagicShop : GlobalNPC
+{
+    public override bool IsLoadingEnabled(Mod mod)
+    {
+        return Relogiced.ConfigMagicOverhaul.EarlyGameWeapons || Relogiced.ConfigAssorted.ShopChanges;
+    }
+
+    public override void ModifyShop(NPCShop shop)
+    {
+        if (shop.NpcType == NPCID.Clothier && shop.Name == "Shop")
+        {
+            shop.Add(ItemID.BookofSkulls, Condition.BloodMoonOrHardmode);
+            shop.Add(ItemID.SkeletronHand, Condition.BloodMoonOrHardmode);
+        }
+    }
+}

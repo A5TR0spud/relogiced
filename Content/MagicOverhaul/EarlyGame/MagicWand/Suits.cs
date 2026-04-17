@@ -204,7 +204,7 @@ public class Suits : ModProjectile
             Vector2 vector2 = new(Main.rand.Next(-10, 11), Main.rand.Next(-10, 11));
             vector2.SafeNormalize(-Vector2.UnitY);
             vector2.X *= 0.66f;
-            int num2 = Gore.NewGore(Projectile.GetSource_FromThis(), 
+            Gore heart = Gore.NewGoreDirect(Projectile.GetSource_FromThis(), 
                 Projectile.position + new Vector2(
                     Main.rand.Next(Projectile.width + 1),
                     Main.rand.Next(Projectile.height + 1)
@@ -212,10 +212,10 @@ public class Suits : ModProjectile
                 vector2 * Main.rand.Next(3, 6) * 0.33f,
                 331,
                 Main.rand.Next(40, 121) * 0.01f);
-            Main.gore[num2].sticky = false;
-            Gore obj = Main.gore[num2];
-            obj.velocity *= 0.4f;
-            Main.gore[num2].velocity.Y -= 0.6f;
+            heart.sticky = false;
+            heart.velocity *= 0.4f;
+            heart.velocity.Y -= 0.6f;
+            heart.velocity *= 0.2f;
         }
 
         FadeInTimer--;

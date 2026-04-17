@@ -101,8 +101,8 @@ Items: {
 	GoblinVoodooDoll_Off.DisplayName: Goblin Doll
 
 	MagicWand: {
-		Tooltip: ""
 		DisplayName: Magic Wand
+		Tooltip: Fires a suite of card suits
 	}
 }
 

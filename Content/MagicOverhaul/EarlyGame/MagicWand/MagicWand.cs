@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 using Terraria.ID;
 using Terraria;
@@ -22,6 +23,7 @@ public class MagicWand : ModItem
         Item.knockBack = 1;
         Item.mana = 4;
         Item.crit = 6;
+        Item.UseSound = SoundID.Item1;
         Item.noMelee = true;
         Item.useTime = 10;
         Item.useAnimation = 30;
@@ -30,6 +32,23 @@ public class MagicWand : ModItem
         Item.useStyle = ItemUseStyleID.Swing;
         Item.shoot = ModContent.ProjectileType<Suits>();
         Item.scale = 0.9f;
+    }
+
+    public override void UseAnimation(Player player)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            Vector2 off = (Main.MouseWorld - player.Center)
+                .SafeNormalize(-Vector2.UnitY)
+                .RotatedByRandom(0.8f * MathHelper.PiOver4);
+            Gore.NewGorePerfect(
+                Item.GetSource_FromThis(),
+                player.position + 16 * off,
+                Main.rand.NextFloat(2, 3) * off,
+                16,
+                1f
+            );
+        }
     }
 
     public override bool Shoot(Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type,
