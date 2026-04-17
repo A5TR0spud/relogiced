@@ -32,15 +32,26 @@ public class MagicWand : ModItem
         Item.useStyle = ItemUseStyleID.Swing;
         Item.shoot = ModContent.ProjectileType<Suits>();
         Item.scale = 0.9f;
+        Item.useTurn = true;
+        Item.useTurnOnAnimationStart = true;
     }
 
     public override void UseAnimation(Player player)
     {
         for (int i = 0; i < 3; i++)
         {
-            Vector2 off = (Main.MouseWorld - player.Center)
-                .SafeNormalize(-Vector2.UnitY)
-                .RotatedByRandom(0.8f * MathHelper.PiOver4);
+            Vector2 off;
+            if (player.whoAmI == Main.myPlayer)
+            {
+                off = (Main.MouseWorld - player.Center);
+            }
+            else
+            {
+                off = new Vector2(player.direction, 0);
+            }
+
+            off = off.SafeNormalize(-Vector2.UnitY).RotatedByRandom(0.8f * MathHelper.PiOver4);
+            
             Gore.NewGorePerfect(
                 Item.GetSource_FromThis(),
                 player.position + 16 * off,
@@ -60,11 +71,14 @@ public class MagicWand : ModItem
         );
         Vector2 newVel = velocity.Length() * (Main.MouseWorld - newPos).SafeNormalize(velocity);
         bool useNewPos = Collision.CanHit(player.Center, 0, 0, newPos - new Vector2(9), 18, 18);
+
         Projectile.NewProjectile(source,
             useNewPos ? newPos : position,
-            useNewPos ? newVel : position,
-            type, damage, knockback, player.whoAmI, ai0: Main.rand.Next(4)
+            useNewPos ? newVel : velocity,
+            type, damage, knockback, player.whoAmI,
+            ai0: Main.rand.Next(4)
         );
+
         if (Main.rand.Next(100) < player.GetWeaponCrit(Item))
         {
             Projectile dove = Projectile.NewProjectileDirect(source, position, velocity, ProjectileID.ReleaseDoves, damage, 0, player.whoAmI);

@@ -5,6 +5,7 @@ using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.Utilities;
 
 namespace Relogiced.Content.MagicOverhaul.EarlyGame.MagicWand;
 
@@ -33,6 +34,11 @@ public class Suits : ModProjectile
         Main.projFrames[Type] = 4;
     }
 
+    public override bool IsLoadingEnabled(Mod mod)
+    {
+        return Relogiced.ConfigMagicOverhaul.EarlyGameWeapons;
+    }
+
     public override void SetDefaults()
     {
         Projectile.timeLeft = 60;
@@ -40,6 +46,7 @@ public class Suits : ModProjectile
         Projectile.height = 18;
         Projectile.width = 18;
         Projectile.frame = 0;
+        Projectile.DamageType = DamageClass.Magic;
         FadeInTimer = FadeIn;
         Projectile.friendly = true;
         Projectile.usesLocalNPCImmunity = true;
@@ -47,8 +54,15 @@ public class Suits : ModProjectile
         Projectile.stopsDealingDamageAfterPenetrateHits = true;
     }
 
+    private void SetFrame()
+    {
+        Projectile.frame = Suit % Main.projFrames[Type];
+    }
+
     public override void OnSpawn(IEntitySource source)
     {
+        SetFrame();
+        
         if (isDiamonds)
         {
             Projectile.ai[1] = Projectile.velocity.Length() * 2;
@@ -56,53 +70,69 @@ public class Suits : ModProjectile
             Projectile.maxPenetrate++;
             Projectile.penetrate++;
         }
-
-        if (isSpades)
+        else if (isSpades)
         {
             Projectile.velocity *= 1.2f;
         }
-
-        if (isHearts)
+        else if (isHearts)
         {
             Projectile.velocity *= 0.8f;
             Projectile.velocity.Y += 0.8f;
         }
-
-        if (isClubs && Projectile.TryGetOwner(out Player owner))
+        else if (isClubs) //should always be true by now but who knows
         {
             Projectile.ai[1] = Main.rand.NextFloat(-0.02f, 0.02f);
-            if (owner.RollLuck(6) == 0)
+            Projectile.ai[2] = Main.rand.NextFloat(-0.04f, 0.04f);
+            if (Projectile.TryGetOwner(out Player owner))
             {
-                Projectile.damage /= 2;
-            }
-            if (owner.RollLuck(8) > 1)
-            {
-                Projectile.extraUpdates++;
-                Projectile.velocity *= 0.75f;
-            }
-            if (owner.RollLuck(5) > 1)
-            {
-                Projectile.maxPenetrate++;
-                Projectile.penetrate++;
-            }
-            if (owner.RollLuck(10) > 1)
-            {
-                Projectile.ArmorPenetration += owner.RollLuck(10) > 1 ? 10 : 5;
+                if (owner.RollLuck(5) < 1)
+                {
+                    Projectile.maxPenetrate++;
+                    Projectile.penetrate++;
+                }
+
+                if (owner.RollLuck(5) < 1)
+                {
+                    Projectile.ArmorPenetration += 5;
+                    if (owner.RollLuck(10) < 1)
+                    {
+                        Projectile.ArmorPenetration += 5;
+                    }
+                }
+                
+                if (owner.RollLuck(6) > 4)
+                    Projectile.damage /= 2;
+                if (owner.luck > 0 && Main.rand.NextFloat() < owner.luck)
+                    Projectile.velocity *= Main.rand.NextFloat(1f, 1.5f + 0.5f * owner.luck);
+                else if (owner.luck < 0 && Main.rand.NextFloat() < -owner.luck)
+                    Projectile.velocity *= Main.rand.NextFloat(0.5f, 1f);
             }
         }
 
-        Projectile.frame = Suit;
-        Projectile.netUpdate = true;
+        while (Math.Abs(Projectile.velocity.X) >= Projectile.width || Math.Abs(Projectile.velocity.Y) >= Projectile.height)
+        {
+            Projectile.velocity *= (1f + Projectile.extraUpdates) / (2f + Projectile.extraUpdates);
+            Projectile.extraUpdates++;
+        }
+    }
+
+    public override bool? CanCutTiles()
+    {
+        return isDiamonds || isSpades;
     }
 
     public override bool OnTileCollide(Vector2 oldVelocity)
     {
         if (isDiamonds)
         {
-            Projectile.velocity = oldVelocity;
-            Projectile.tileCollide = false;
+            SoundStyle sound = SoundID.Dig;
+            sound = sound.WithVolumeScale(0.4f);
+            SoundEngine.PlaySound(sound, Projectile.position);
+            Collision.HitTiles(Projectile.position + oldVelocity, oldVelocity, Projectile.width, Projectile.height);
+            Projectile.Kill();
+            return false;
         }
-        if (isHearts || isDiamonds)
+        if (isHearts)
         {
             Projectile.timeLeft = Math.Min(Projectile.timeLeft, FadeOut);
         }
@@ -111,16 +141,22 @@ public class Suits : ModProjectile
             Projectile.velocity = oldVelocity * 0.5f;
             Collision.HitTiles(Projectile.position + oldVelocity, oldVelocity, Projectile.width, Projectile.height);
             SoundStyle sound = SoundID.WormDigQuiet;
-            SoundEngine.PlaySound(sound.WithPitchOffset(Main.rand.NextFloat(-0.065f, 0.125f)), Projectile.position);
+            sound = sound.WithPitchOffset(Main.rand.NextFloat(-0.065f, 0.125f));
+            SoundEngine.PlaySound(sound, Projectile.position);
             Projectile.tileCollide = false;
         }
-        if (isHearts || isDiamonds || isClubs)
+        if (isHearts || isClubs)
         {
             if (Math.Abs(Projectile.velocity.X - oldVelocity.X) > float.Epsilon)
                 Projectile.velocity.X = -oldVelocity.X;
 
             if (Math.Abs(Projectile.velocity.Y - oldVelocity.Y) > float.Epsilon)
                 Projectile.velocity.Y = -oldVelocity.Y;
+
+            SoundStyle sound = SoundID.Item56;
+            sound = sound.WithPitchOffset(Main.rand.NextFloat(-0.4f, -0.2f));
+            sound = sound.WithVolumeScale(0.5f);
+            SoundEngine.PlaySound(sound, Projectile.position);
         }
         return false;
     }
@@ -139,6 +175,8 @@ public class Suits : ModProjectile
 
     public override void AI()
     {
+        SetFrame();
+        
         if (isDiamonds)
         {
             if (Projectile.velocity.Length() < Projectile.ai[1])
@@ -150,12 +188,7 @@ public class Suits : ModProjectile
 
         if (isClubs)
         {
-            Projectile.velocity = Projectile.velocity.RotatedBy(Projectile.ai[1]);
-            if (Projectile.timeLeft == 30)
-            {
-                Projectile.ai[1] = Main.rand.NextFloat(-0.04f, 0.04f);
-                Projectile.netUpdate = true;
-            }
+            Projectile.velocity = Projectile.velocity.RotatedBy(Projectile.timeLeft < 30 ? Projectile.ai[2] : Projectile.ai[1]);
         }
         if (isHearts)
         {
