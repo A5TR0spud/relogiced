@@ -10,4 +10,6 @@ public class Client : ModConfig
     [Header("Experiments")]
     [ReloadRequired] [DefaultValue(false)]
     public bool LightingRework;
+    [ReloadRequired] [DefaultValue(false)]
+    public bool LightingCompensation;
 }

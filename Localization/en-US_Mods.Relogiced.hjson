@@ -27,15 +27,6 @@ Configs: {
 			Tooltip: Buffs that last forever also persist through death.
 		}
 
-		LightingRebalance: {
-			Label: Lighting Rebalance
-			Tooltip:
-				'''
-				Makes certain lights brighter or dimmer.
-				For example, the Fairy Glowstick is 137% as bright.
-				'''
-		}
-
 		ShopChanges: {
 			Label: Shop Changes
 			Tooltip: Rearranges and expands some NPC shops.
@@ -55,6 +46,15 @@ Configs: {
 		}
 
 		DisplayName: Client
+
+		LightingCompensation: {
+			Label: Lighting Compensation
+			Tooltip:
+				'''
+				Makes certain lights brighter or dimmer, to compensate for
+				questionable vanilla code regarding luminosity.
+				'''
+		}
 	}
 
 	MeleeOverhaul: {
@@ -83,6 +83,15 @@ Configs: {
 				adding a Magic Wand sold by the Traveling Merchant alongside the Magic Hat.
 				'''
 		}
+
+		ManaRewrite: {
+			Label: Mana Rewrite
+			Tooltip:
+				'''
+				Mana is a much more forgiving resource and correlates directly to damage.
+				Mana Flower and Mana Potions are also adjusted.
+				'''
+		}
 	}
 }
 
@@ -104,6 +113,13 @@ Items: {
 		DisplayName: Magic Wand
 		Tooltip: Fires a suite of card suits
 	}
+
+	ManaFlowerTip: Reduces the magic damage penalty of low mana
+	ManaPotionTip:
+		'''
+		Increases maximum mana by {0}
+		Reduces mana usage by 10%
+		'''
 }
 
 Chats: {
@@ -115,4 +131,15 @@ Chats: {
 	}
 }
 
-Projectiles.Suits.DisplayName: Suits
+Projectiles.Suits.DisplayName: Card Suit
+
+Buffs: {
+	MaxManaBuff: {
+		DisplayName: Stellar!
+		Description:
+			'''
+			Increases maximum mana by {0}
+			Reduces mana usage by 10%
+			'''
+	}
+}

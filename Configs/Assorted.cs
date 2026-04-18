@@ -20,7 +20,4 @@ public class Assorted : ModConfig
     [Header("Other")]
     [ReloadRequired] [DefaultValue(true)]
     public bool BuffStationsSave;
-    
-    [ReloadRequired] [DefaultValue(true)]
-    public bool LightingRebalance;
 }

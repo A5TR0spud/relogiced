@@ -42,13 +42,13 @@ class GlobalVoodooNPC : GlobalNPC
                 Condition.MoonPhasesNearNew
             ));
             shop.Add(new NPCShop.Entry(
-                ItemID.ClothierVoodooDoll,
-                Condition.HappyEnough
-            ));
-            shop.Add(new NPCShop.Entry(
                 ModContent.ItemType<MechanicVoodooDoll_On>(),
                 Condition.NpcIsPresent(NPCID.Mechanic),
                 Condition.MoonPhasesNearNew
+            ));
+            shop.Add(new NPCShop.Entry(
+                ItemID.ClothierVoodooDoll,
+                Condition.HappyEnough
             ));
         }
     }

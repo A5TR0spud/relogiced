@@ -109,7 +109,7 @@ public class Suits : ModProjectile
             }
         }
 
-        while (Math.Abs(Projectile.velocity.X) >= Projectile.width || Math.Abs(Projectile.velocity.Y) >= Projectile.height)
+        while (Math.Abs(Projectile.velocity.X) >= Math.Max(Projectile.width, 16) || Math.Abs(Projectile.velocity.Y) >= Math.Max(Projectile.height, 16))
         {
             Projectile.velocity *= (1f + Projectile.extraUpdates) / (2f + Projectile.extraUpdates);
             Projectile.extraUpdates++;

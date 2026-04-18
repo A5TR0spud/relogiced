@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework.Graphics;
+using ReLogic.Content;
 using Terraria;
 using Terraria.Audio;
 using Terraria.GameContent;
@@ -23,6 +24,11 @@ public class RelogicedUtil
         item.ChangeItemType(newItemID);
         Recipe.FindRecipes();
         return true;
+    }
+
+    public static Asset<Texture2D> GetAsset(string suffix)
+    {
+        return Relogiced.Instance.Assets.Request<Texture2D>(suffix);
     }
 
     public static void ChangeItemSprite(int item, string suffix)
