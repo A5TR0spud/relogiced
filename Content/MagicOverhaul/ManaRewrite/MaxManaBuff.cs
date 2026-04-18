@@ -18,9 +18,19 @@ public class MaxManaBuff : ModBuff
 
     private Asset<Texture2D> texSheet;
 
+    public override bool IsLoadingEnabled(Mod mod)
+    {
+        return Relogiced.ConfigMagicOverhaul.ManaRewrite;
+    }
+
     public override void Load()
     {
         texSheet = RelogicedUtil.GetAsset("Content/MagicOverhaul/ManaRewrite/MaxManaBuff_Sheet");
+    }
+
+    public override void Unload()
+    {
+        texSheet = null;
     }
 
     public static int GetManaBuffFromDuration(int time)

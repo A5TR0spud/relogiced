@@ -42,13 +42,13 @@ public class LightingCompensation : ModSystem
     private const float RLumen = 0.299f;
     private const float GLumen = 0.587f;
     private const float BLumen = 0.114f;
-    
-    //TODO: figure out how to stop unwanted flickering
-    //TODO: figure out why blue is not being brightened
 
     public static Vector3 ProcessLight(Vector3 color)
     {
-        Vector3 newColor = color * GetValue(color) / GetLuminance(color);
+        float lumen = GetLuminance(color);
+        if (lumen <= 0) return color;
+        color *= 0.707106781187f;
+        Vector3 newColor = color * GetValue(color) / lumen;
         Vector3 blownOutColor = Clamp(newColor);
         Vector3 overflow = newColor - blownOutColor;
         if (overflow.X > 0)
@@ -66,6 +66,7 @@ public class LightingCompensation : ModSystem
             blownOutColor.Y += 0.5f * overflow.Z;
             blownOutColor.X += 0.5f * overflow.Z;
         }
+
         return blownOutColor;
     }
 
@@ -81,9 +82,9 @@ public class LightingCompensation : ModSystem
         GetValue(color) - GetDimmest(color);
 
     public static float GetDimmest(Vector3 color) =>
-        Math.Max(
+        Math.Min(
             color.X,
-            Math.Max(color.Y, color.Z)
+            Math.Min(color.Y, color.Z)
         );
 
     public static float GetValue(Vector3 color) =>
@@ -98,4 +99,24 @@ public class LightingCompensation : ModSystem
             + GLumen * (color.Y * color.Y)
             + BLumen * (color.Z * color.Z)
         );
+}
+
+public class LightingCompTile : GlobalTile
+{
+    public override bool IsLoadingEnabled(Mod mod)
+    {
+        return Relogiced.ConfigClient.LightingCompensation;
+    }
+
+    public override void ModifyLight(int i, int j, int type, ref float r, ref float g, ref float b)
+    {
+        Vector3 col = new Vector3(r, g, b);
+        if (Main.tileLighted[type] && LightingCompensation.GetValue(col) > 0)
+        {
+            col = LightingCompensation.ProcessLight(col);
+            r = col.X;
+            g = col.Y;
+            b = col.Z;
+        }
+    }
 }

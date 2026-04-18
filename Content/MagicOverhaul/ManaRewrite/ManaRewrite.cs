@@ -64,8 +64,9 @@ public class ManaRewritePlayer : ModPlayer
             manaTimer -= 60;
         }
         Player.UpdateManaRegen();
-        float forgiveness = Player.manaFlower ? 0.2f : 0;
-        Player.GetDamage(DamageClass.Magic) *= forgiveness + (1f - forgiveness) * Player.statMana / (float)Player.statManaMax2;
+        float forgiveness = Player.manaFlower ? 0.33f : 0.25f;
+        float penalty = forgiveness + (1f - forgiveness) * Player.statMana / (float)Player.statManaMax2;
+        Player.GetDamage(DamageClass.Magic) *= penalty;
     }
 }
 
