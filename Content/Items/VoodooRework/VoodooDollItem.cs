@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Relogiced.Other;
 using Terraria;
 using Terraria.ID;
@@ -8,14 +9,14 @@ namespace Relogiced.Content.Items.VoodooRework;
 
 public abstract class VoodooDollItem : ModItem
 {
-    public abstract int AssociatedNPC();
+    public abstract List<int> AssociatedNPCs();
     public abstract int OtherVariant();
     public override bool IsLoadingEnabled(Mod mod)
     {
         return Relogiced.ConfigAssorted.VoodooRework;
     }
 
-    public override LocalizedText Tooltip => AssociatedNPC() == 0
+    public override LocalizedText Tooltip => AssociatedNPCs().TrueForAll(i => i == 0)
         ? Mod.GetLocalization("Items.VoodooInactiveTip")
         : Mod.GetLocalization("Items.VoodooActiveTip");
 

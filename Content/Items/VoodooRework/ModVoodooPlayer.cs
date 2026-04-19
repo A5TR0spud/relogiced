@@ -50,11 +50,14 @@ public class ModVoodooPlayer : ModPlayer
             Player.killClothier = true;
             return;
         }
-        if (item.ModItem is VoodooDollItem voodooDoll &&
-            voodooDoll.AssociatedNPC() != 0 &&
-            !KillableNPCs.Contains(voodooDoll.AssociatedNPC()))
+        if (item.ModItem is VoodooDollItem voodooDoll)
         {
-            KillableNPCs.Add(voodooDoll.AssociatedNPC());
+            foreach (int id in voodooDoll.AssociatedNPCs())
+            {
+                if (id == 0 || KillableNPCs.Contains(id))
+                    continue;
+                KillableNPCs.Add(id);
+            }
         }
     }
 

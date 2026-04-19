@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Relogiced.Other;
 using Terraria;
 using Terraria.ID;
@@ -12,7 +13,7 @@ public class GuideVoodooDoll_Off : VoodooDollItem
         Item.CloneDefaults(ItemID.GuideVoodooDoll);
     }
 
-    public override int AssociatedNPC() => 0;
+    public override List<int> AssociatedNPCs() => [];
 
     public override int OtherVariant() => ItemID.GuideVoodooDoll;
 }
@@ -23,7 +24,7 @@ public class ClothierVoodooDoll_Off : VoodooDollItem
         Item.CloneDefaults(ItemID.ClothierVoodooDoll);
     }
 
-    public override int AssociatedNPC() => 0;
+    public override List<int> AssociatedNPCs() => [];
 
     public override int OtherVariant() => ItemID.ClothierVoodooDoll;
 }
@@ -33,7 +34,7 @@ public class MechanicVoodooDoll_On : VoodooDollItem
     {
         Item.CloneDefaults(ItemID.ClothierVoodooDoll);
     }
-    public override int AssociatedNPC() => NPCID.Mechanic;
+    public override List<int> AssociatedNPCs() => [NPCID.BoundMechanic, NPCID.Mechanic];
     public override int OtherVariant() => ModContent.ItemType<MechanicVoodooDoll_Off>();
 }
 public class MechanicVoodooDoll_Off : VoodooDollItem
@@ -42,7 +43,7 @@ public class MechanicVoodooDoll_Off : VoodooDollItem
     {
         Item.CloneDefaults(OtherVariant());
     }
-    public override int AssociatedNPC() => 0;
+    public override List<int> AssociatedNPCs() => [];
     public override int OtherVariant() => ModContent.ItemType<MechanicVoodooDoll_On>();
 }
 public class GoblinVoodooDoll_On : VoodooDollItem
@@ -51,7 +52,7 @@ public class GoblinVoodooDoll_On : VoodooDollItem
     {
         Item.CloneDefaults(ItemID.ClothierVoodooDoll);
     }
-    public override int AssociatedNPC() => NPCID.GoblinTinkerer;
+    public override List<int> AssociatedNPCs() => [NPCID.BoundGoblin, NPCID.GoblinTinkerer];
     public override int OtherVariant() => ModContent.ItemType<GoblinVoodooDoll_Off>();
 }
 public class GoblinVoodooDoll_Off : VoodooDollItem
@@ -60,6 +61,6 @@ public class GoblinVoodooDoll_Off : VoodooDollItem
     {
         Item.CloneDefaults(OtherVariant());
     }
-    public override int AssociatedNPC() => 0;
+    public override List<int> AssociatedNPCs() => [];
     public override int OtherVariant() => ModContent.ItemType<GoblinVoodooDoll_On>();
 }
