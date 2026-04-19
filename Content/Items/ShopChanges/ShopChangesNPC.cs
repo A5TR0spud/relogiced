@@ -18,11 +18,11 @@ public class ShopChangesNPC : GlobalNPC
             shop.Add(ItemID.Handgun, Condition.DownedSkeletron, Condition.BloodMoonOrHardmode);
             shop.Add(ItemID.ClockworkAssaultRifle, Condition.Hardmode, Condition.EclipseOrBloodMoon);
             shop.Add(ItemID.ClockworkAssaultRifle, Condition.NpcIsPresent(NPCID.Steampunker));
-            shop.InsertAfter(ItemID.TungstenBullet, ItemID.MoonlordBullet, Condition.DownedMoonLord);
-            shop.InsertAfter(ItemID.TungstenBullet, ItemID.ChlorophyteBullet, Condition.DownedPlantera);
-            shop.InsertAfter(ItemID.TungstenBullet, ItemID.CrystalBullet, Condition.DownedQueenSlime);
-            shop.InsertAfter(ItemID.TungstenBullet, ItemID.CursedBullet, Condition.CorruptWorld, Condition.Hardmode, Condition.EclipseOrBloodMoon);
             shop.InsertAfter(ItemID.TungstenBullet, ItemID.IchorBullet, Condition.CrimsonWorld, Condition.Hardmode, Condition.EclipseOrBloodMoon);
+            shop.InsertAfter(ItemID.TungstenBullet, ItemID.CursedBullet, Condition.CorruptWorld, Condition.Hardmode, Condition.EclipseOrBloodMoon);
+            shop.InsertAfter(ItemID.TungstenBullet, ItemID.CrystalBullet, Condition.DownedQueenSlime);
+            shop.InsertAfter(ItemID.TungstenBullet, ItemID.ChlorophyteBullet, Condition.DownedPlantera);
+            shop.InsertAfter(ItemID.TungstenBullet, ItemID.MoonlordBullet, Condition.DownedMoonLord);
             shop.InsertAfter(ItemID.UnholyArrow, ItemID.MoonlordArrow, Condition.DownedMoonLord);
             return;
         }
@@ -143,10 +143,10 @@ public class ShopChangesNPC : GlobalNPC
 
         if (shop.NpcType == NPCID.Merchant && shop.Name == "Shop")
         {
+            shop.InsertAfter(ItemID.ManaPotion, ItemID.RecallPotion, Condition.HappyWindyDay);
+            shop.InsertAfter(ItemID.ManaPotion, ItemID.PotionOfReturn, Condition.LanternNight, Condition.DownedEowOrBoc);
             shop.InsertAfter(ItemID.ManaPotion, ItemID.ArcheryPotion, Condition.MoonPhasesEven);
             shop.InsertAfter(ItemID.ManaPotion, ItemID.BuilderPotion, Condition.MoonPhasesOdd);
-            shop.InsertAfter(ItemID.ManaPotion, ItemID.PotionOfReturn, Condition.LanternNight, Condition.DownedEowOrBoc);
-            shop.InsertAfter(ItemID.ManaPotion, ItemID.RecallPotion, Condition.HappyWindyDay);
             return;
         }
 
@@ -163,9 +163,9 @@ public class ShopChangesNPC : GlobalNPC
         if (shop.NpcType == NPCID.Stylist && shop.Name == "Shop")
         {
             shop.InsertBefore(ItemID.WilsonBeardShort, ItemID.FamiliarWig);
-            shop.InsertAfter(ItemID.WilsonBeardShort, ItemID.FruitJuice, Condition.HappyEnough);
+            shop.InsertAfter(ItemID.WilsonBeardShort, ItemID.Teacup, Condition.HappyEnough, Condition.MoonPhasesOdd);
             shop.InsertAfter(ItemID.WilsonBeardShort, ItemID.CoffeeCup, Condition.HappyEnough);
-            shop.InsertAfter(ItemID.WilsonBeardShort, ItemID.Teacup, Condition.HappyEnough);
+            shop.InsertAfter(ItemID.WilsonBeardShort, ItemID.FruitJuice, Condition.HappyEnough, Condition.MoonPhasesEven);
             shop.Add(ItemID.StylistKilLaKillScissorsIWish, Condition.HappyEnough);
             shop.Add(ItemID.ArmorPolish, Condition.Hardmode, Condition.EclipseOrBloodMoon);
             shop.Add(ItemID.PocketMirror, Condition.Hardmode, Condition.InMarble);

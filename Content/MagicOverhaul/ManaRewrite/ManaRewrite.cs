@@ -43,7 +43,13 @@ public class ManaRewritePlayer : ModPlayer
     }
 
     public float manaTimer = 0;
-    
+    public bool starstruck = false;
+
+    public override void PreUpdateBuffs()
+    {
+        starstruck = false;
+    }
+
     public override void UpdateDead()
     {
         manaTimer = 0;
@@ -56,7 +62,13 @@ public class ManaRewritePlayer : ModPlayer
 
     public override void PostUpdate()
     {
-        manaTimer += (Player.statManaMax2 - Player.statMana) / 10f;
+        float toAdd = (Player.statManaMax2 - Player.statMana) / 10f;
+        if (starstruck)
+        {
+            toAdd *= 1.5f;
+            toAdd += 5f;
+        }
+        manaTimer += toAdd;
         if (manaTimer >= 60)
         {
             if (Player.statMana < Player.statManaMax2)
@@ -64,9 +76,19 @@ public class ManaRewritePlayer : ModPlayer
             manaTimer -= 60;
         }
         Player.UpdateManaRegen();
+    }
+
+    public override void ModifyWeaponDamage(Item item, ref StatModifier damage)
+    {
+        if (!item.DamageType.CountsAsClass(DamageClass.Magic)) return;
         float forgiveness = Player.manaFlower ? 0.33f : 0.25f;
-        float penalty = forgiveness + (1f - forgiveness) * Player.statMana / (float)Player.statManaMax2;
-        Player.GetDamage(DamageClass.Magic) *= penalty;
+        float ratio = Player.statMana / (float)Player.statManaMax2;
+        if (starstruck)
+        {
+            ratio = 1f - ratio;
+        }
+        float penalty = forgiveness + (1f - forgiveness) * ratio;
+        damage *= penalty;
     }
 }
 
@@ -92,7 +114,7 @@ public class ManaRewriteItem : GlobalItem
 
     public override void SetDefaults(Item item)
     {
-        if (item.healMana > 0)
+        if (item.healMana > 0 && item.buffType is 0 or BuffID.ManaSickness)
         {
             item.buffTime = (int)(MaxManaBuff.BuffTimePerPotion * (item.healMana / 50f));
             item.healMana = 0;

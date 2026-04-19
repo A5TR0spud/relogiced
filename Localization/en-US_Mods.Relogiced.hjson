@@ -120,6 +120,16 @@ Items: {
 		Increases maximum mana by {0}
 		Reduces mana usage by 10%
 		'''
+
+	Shimmerale: {
+		DisplayName: Shimmerale
+		Tooltip:
+			'''
+			Increases rate of mana regeneration and lowers defense
+			Inverts the damage penalty of low mana
+			'It tastes like stars'
+			'''
+	}
 }
 
 Chats: {
@@ -140,6 +150,15 @@ Buffs: {
 			'''
 			Increases maximum mana by {0}
 			Reduces mana usage by 10%
+			'''
+	}
+
+	Starstruck: {
+		DisplayName: Star-struck
+		Description:
+			'''
+			Increases rate of mana regeneration and lowers defense
+			Inverts the damage penalty of low mana
 			'''
 	}
 }

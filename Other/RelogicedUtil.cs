@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using Terraria;
@@ -8,7 +10,7 @@ using Terraria.ModLoader;
 
 namespace Relogiced.Other;
 
-public class RelogicedUtil
+public class RelogicedUtil : ModSystem
 {
     public static void ChangeItemTypeFromRMB(Item item, int newItemID, bool unlockSound = false)
     {
@@ -16,6 +18,77 @@ public class RelogicedUtil
         SoundEngine.PlaySound(unlockSound ? SoundID.Unlock : SoundID.Grab);
         Main.stackSplit = 30;
         Main.mouseRightRelease = false;
+    }
+
+    private static List<int>[] ShimmerMap = ItemID.Sets.Factory.CreateCustomSet<List<int>>([]);
+    private static int[] ShimmerIndices = ItemID.Sets.Factory.CreateIntSet(0);
+
+    public override void Load()
+    {
+        for (int i = 0; i < ItemID.Sets.ShimmerTransformToItem.Length; i++)
+        {
+            ShimmerMap[i].Add(ItemID.Sets.ShimmerTransformToItem[i]);
+        }
+        On_Item.GetShimmered += On_ItemOnGetShimmered;
+    }
+
+    public override void Unload()
+    {
+        On_Item.GetShimmered -= On_ItemOnGetShimmered;
+        ShimmerMap = ItemID.Sets.Factory.CreateCustomSet<List<int>>([]);
+        ShimmerIndices = ItemID.Sets.Factory.CreateIntSet(0);
+    }
+
+    private void On_ItemOnGetShimmered(On_Item.orig_GetShimmered orig, Item self)
+    {
+        ItemID.Sets.ShimmerTransformToItem[self.type] = GetShimmer(self.type);
+        orig(self);
+    }
+
+    private static int GetShimmer(int inID)
+    {
+        if (!ShimmerMap[inID].Contains(ItemID.Sets.ShimmerTransformToItem[inID]))
+        {
+            RegisterShimmer(inID, ItemID.Sets.ShimmerTransformToItem[inID]);
+        }
+        
+        for (int i = ShimmerIndices[inID]; i < ShimmerIndices[inID] + ShimmerMap[inID].Count; i++)
+        {
+            int idx = i % ShimmerMap[inID].Count;
+            int ret = ShimmerMap[inID][idx];
+            ShimmerIndices[inID] = (ShimmerIndices[inID] + 1) % ShimmerMap[inID].Count;
+            //if the result is to decraft it, but there is no decraft, skip it
+            if (ret <= 0 && ShimmerTransforms.GetDecraftingRecipeIndex(inID) == -1) continue;
+            return ret;
+        }
+
+        return ItemID.Sets.ShimmerTransformToItem[inID];
+    }
+
+    public static void OverrideShimmer(int inID, int outID, int expectedOutID,
+        bool doNothingIfUnexpected = false)
+    {
+        if (ItemID.Sets.ShimmerTransformToItem[inID] != expectedOutID)
+        {
+            if (!doNothingIfUnexpected)
+                RegisterShimmer(inID, outID);
+            return;
+        }
+
+        ItemID.Sets.ShimmerTransformToItem[inID] = outID;
+        for (int i = 0; i < ShimmerMap[inID].Count; i++)
+        {
+            if (ShimmerMap[inID][i] == expectedOutID)
+                ShimmerMap[inID][i] = outID;
+        }
+    }
+
+    public static void RegisterShimmer(int inID, int outID, bool reversible = false)
+    {
+        ShimmerMap[inID].Add(outID);
+        
+        if (reversible)
+            RegisterShimmer(outID, inID, false);
     }
 
     public static bool ChangeItemType(Item item, int newItemID)
