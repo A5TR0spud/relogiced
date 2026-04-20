@@ -27,7 +27,7 @@ public class RelogicedUtil : ModSystem
     {
         for (int i = 0; i < ItemID.Sets.ShimmerTransformToItem.Length; i++)
         {
-            ShimmerMap[i].Add(ItemID.Sets.ShimmerTransformToItem[i]);
+            ShimmerMap[i] = [ItemID.Sets.ShimmerTransformToItem[i]];
         }
         On_Item.GetShimmered += On_ItemOnGetShimmered;
     }
@@ -47,9 +47,10 @@ public class RelogicedUtil : ModSystem
 
     private static int GetShimmer(int inID)
     {
-        if (!ShimmerMap[inID].Contains(ItemID.Sets.ShimmerTransformToItem[inID]))
+        int currentResult = ItemID.Sets.ShimmerTransformToItem[inID];
+        if (!ShimmerMap[inID].Contains(currentResult))
         {
-            RegisterShimmer(inID, ItemID.Sets.ShimmerTransformToItem[inID]);
+            RegisterShimmer(inID, currentResult);
         }
         
         for (int i = ShimmerIndices[inID]; i < ShimmerIndices[inID] + ShimmerMap[inID].Count; i++)
@@ -62,17 +63,18 @@ public class RelogicedUtil : ModSystem
             return ret;
         }
 
-        return ItemID.Sets.ShimmerTransformToItem[inID];
+        return currentResult;
     }
 
-    public static void OverrideShimmer(int inID, int outID, int expectedOutID,
+    public static bool OverrideShimmer(int inID, int outID, int expectedOutID = -1,
         bool doNothingIfUnexpected = false)
     {
         if (ItemID.Sets.ShimmerTransformToItem[inID] != expectedOutID)
         {
-            if (!doNothingIfUnexpected)
-                RegisterShimmer(inID, outID);
-            return;
+            if (doNothingIfUnexpected)
+                return false;
+            RegisterShimmer(inID, outID);
+            return true;
         }
 
         ItemID.Sets.ShimmerTransformToItem[inID] = outID;
@@ -81,11 +83,13 @@ public class RelogicedUtil : ModSystem
             if (ShimmerMap[inID][i] == expectedOutID)
                 ShimmerMap[inID][i] = outID;
         }
+        return true;
     }
 
     public static void RegisterShimmer(int inID, int outID, bool reversible = false)
     {
-        ShimmerMap[inID].Add(outID);
+        if (!ShimmerMap[inID].Contains(outID))
+            ShimmerMap[inID].Add(outID);
         
         if (reversible)
             RegisterShimmer(outID, inID, false);
