@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -126,14 +126,10 @@ public class ManaRewriteItem : GlobalItem
     {
         if (IsManaFlower(item))
         {
-            for (int i = 0; i < tooltips.Count; i++)
+            foreach (var line in tooltips.Where(line => line.Name == "Tooltip1" && line.Mod == "Terraria"))
             {
-                TooltipLine line = tooltips[i];
-                if (line.Name == "Tooltip1" && line.Mod == "Terraria")
-                {
-                    line.Text = ItemTooltip.FromLocalization(Mod.GetLocalization("Items.ManaFlowerTip")).GetLine(0);
-                    break;
-                }
+                line.Text = ItemTooltip.FromLocalization(Mod.GetLocalization("Items.ManaFlowerTip")).GetLine(0);
+                break;
             }
         }
 

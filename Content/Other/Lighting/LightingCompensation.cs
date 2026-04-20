@@ -39,9 +39,9 @@ public class LightingCompensation : ModSystem
         orig(self, x, y, color);
     }
 
-    private const float RLumen = 0.299f;
-    private const float GLumen = 0.587f;
-    private const float BLumen = 0.114f;
+    private const float R_LUMEN = 0.299f;
+    private const float G_LUMEN = 0.587f;
+    private const float B_LUMEN = 0.114f;
 
     public static Vector3 ProcessLight(Vector3 color)
     {
@@ -95,9 +95,9 @@ public class LightingCompensation : ModSystem
 
     public static float GetLuminance(Vector3 color) =>
         (float)Math.Sqrt(
-            RLumen * (color.X * color.X)
-            + GLumen * (color.Y * color.Y)
-            + BLumen * (color.Z * color.Z)
+            R_LUMEN * (color.X * color.X)
+            + G_LUMEN * (color.Y * color.Y)
+            + B_LUMEN * (color.Z * color.Z)
         );
 }
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -12,7 +11,7 @@ namespace Relogiced.Content.Other.Lighting;
 
 public class LightingRework : ModSystem
 {
-	private const float Cutoff = 0.0185f;
+	private const float CUTOFF = 0.0185f;
     public override bool IsLoadingEnabled(Mod mod)
     {
         return Relogiced.ConfigClient.LightingRework;
@@ -30,7 +29,6 @@ public class LightingRework : ModSystem
 
     struct LightSource
     {
-	    public Point pos = Point.Zero;
 	    public Vector3 col = Vector3.Zero;
 	    public float bri = 0f;
 	    public int idx = 0;
@@ -65,19 +63,19 @@ public class LightingRework : ModSystem
 			c.Emit<LightMap>(OpCodes.Call, "get_LightDecayThroughHoney");
 			c.Emit(OpCodes.Ldarg_0);
 			c.Emit<LightMap>(OpCodes.Ldfld, "_random");
-			c.EmitDelegate((LightMap self, ref Vector3[] _colors, LightMaskMode[] _mask,
+			c.EmitDelegate((LightMap self, ref Vector3[] colors, LightMaskMode[] mask,
 				float decayAir, float decaySolid, Vector3 decayWater, Vector3 decayHoney,
-				FastRandom _random) =>
+				FastRandom random) =>
 			{
-				LightSource[] lights = new LightSource[_colors.Length];
+				LightSource[] lights = new LightSource[colors.Length];
 				int lightsCount = 0;
-				Vector3[] colors = _colors;
+				Vector3[] colorsCopy = colors;
 				
 				GetLightsPass();
 				DrawLightsPass();
 				
-				_random.NextSeed();
-				_colors = colors;
+				random.NextSeed();
+				colors = colorsCopy;
 				return;
 
 				void GetLightsPass()
@@ -90,29 +88,29 @@ public class LightingRework : ModSystem
 						float r, g, b;
 						for (int i = start; i < end; i++)
 						{
-							if (colors[i].X > 0 || colors[i].Y > 0 || colors[i].Z > 0)
+							if (colorsCopy[i].X > 0 || colorsCopy[i].Y > 0 || colorsCopy[i].Z > 0)
 							{
-								r = Math.Max(colors[i].X, 0);
-								g = Math.Max(colors[i].Y, 0);
-								b = Math.Max(colors[i].Z, 0);
+								r = Math.Max(colorsCopy[i].X, 0);
+								g = Math.Max(colorsCopy[i].Y, 0);
+								b = Math.Max(colorsCopy[i].Z, 0);
 								int sameness = 0;
 								int samenessT = 0;
-								for (int _c = 0; _c < 4; _c++)
+								for (int samenessIdx = 0; samenessIdx < 4; samenessIdx++)
 								{
-									int t = i + IndexOf(_c switch
+									int t = i + IndexOf(samenessIdx switch
 									{
 										0 => -1,
 										1 => 1,
 										_ => 0
-									}, _c switch
+									}, samenessIdx switch
 									{
 										2 => -1,
 										3 => 1,
 										_ => 0
 									});
-									if (t < 0 || t >= colors.Length) continue;
+									if (t < 0 || t >= colorsCopy.Length) continue;
 									samenessT++;
-									if (colors[t].X >= r && colors[t].Y >= g && colors[t].Z >= b)
+									if (colorsCopy[t].X >= r && colorsCopy[t].Y >= g && colorsCopy[t].Z >= b)
 										sameness++;
 									if (sameness < samenessT) break;
 								}
@@ -121,8 +119,7 @@ public class LightingRework : ModSystem
 								lights[lightsCount++] = new LightSource
 								{
 									col = colo,
-									pos = PositionOf(i),
-									bri = value(colo),
+									bri = Value(colo),
 									idx = i
 								};
 							}
@@ -139,21 +136,9 @@ public class LightingRework : ModSystem
 						{
 							LightSource ls = lights[i];
 							
-							float radius = (float)Math.Log(Cutoff / ls.bri, decayAir);
+							float radius = (float)Math.Log(CUTOFF / ls.bri, decayAir);
 							Vector3 rayLight;
 							Vector2 delta;
-							/*int rI = (int)Math.Ceiling(radius);
-							Point target;
-							for (int j = 0; j <= 4 * rI; j++)
-							{
-								int u = j % (2 * rI) - rI;
-								int v = (j + rI) % (2 * rI) - rI;
-								int idx = ls.idx + IndexOf(u, v);
-								if (idx < 0 || idx >= colors.Length) continue;
-								target = new Point(u, v);
-								delta = Point.Zero;
-								rayLight = ls.col;
-							}*/
 							float circumference = 2f * radius * MathHelper.Pi;
 							int circumsteps = (int)Math.Round(circumference);
 							float circumstep = MathHelper.TwoPi / circumsteps;
@@ -170,9 +155,9 @@ public class LightingRework : ModSystem
 									int idx2 = ls.idx + IndexOf((int)delta.X, (int)delta.Y);
 									Vector3 trans = GetTransmission(idx2);
 									if (trans == Vector3.Zero) break;
-									colors[idx2] = vec3max(colors[idx2], rayLight);
+									colorsCopy[idx2] = Vector3.Max(colorsCopy[idx2], rayLight);
 									rayLight *= trans;
-								} while (value(rayLight) > Cutoff);
+								} while (Value(rayLight) > CUTOFF);
 							}
 						}
 					}, (object)null);
@@ -180,9 +165,9 @@ public class LightingRework : ModSystem
 				
 				Vector3 GetTransmission(int idx)
 				{
-					if (idx < 0 || idx >= colors.Length) return Vector3.Zero;
+					if (idx < 0 || idx >= colorsCopy.Length) return Vector3.Zero;
 					Vector3 trans = Vector3.Zero;
-					switch (_mask[idx])
+					switch (mask[idx])
 					{
 						case LightMaskMode.Solid:
 						{
@@ -191,7 +176,7 @@ public class LightingRework : ModSystem
 						}
 						case LightMaskMode.Water:
 						{
-							float num = (float)_random.WithModifier((ulong)idx).Next(98, 100) / 100f;
+							float num = random.WithModifier((ulong)idx).Next(98, 100) / 100f;
 							trans = num * decayWater;
 							break;
 						}
@@ -210,13 +195,8 @@ public class LightingRework : ModSystem
 
 					return trans;
 				}
-
-				Vector3 vec3max(Vector3 vec1, Vector3 vec2) => new (
-					Math.Max(vec1.X, vec2.X),
-					Math.Max(vec1.Y, vec2.Y),
-					Math.Max(vec1.Z, vec2.Z)
-				);
-				float value(Vector3 color) => Math.Max(color.X, Math.Max(color.Y, color.Z));
+				
+				float Value(Vector3 color) => Math.Max(color.X, Math.Max(color.Y, color.Z));
 				int IndexOf(int x, int y) => x * self.Height + y;
 				Point PositionOf(int index) => new (index / self.Height, index % self.Height);
 				float LengthSquaredOf(Point p) => p.X*p.X+p.Y*p.Y;

@@ -6,8 +6,6 @@ using ReLogic.Content;
 using Relogiced.Other;
 using Terraria;
 using Terraria.DataStructures;
-using Terraria.GameContent;
-using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace Relogiced.Content.MagicOverhaul.ManaRewrite;

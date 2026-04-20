@@ -1,9 +1,7 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Relogiced.Other;
 using Terraria;
 using Terraria.DataStructures;
-using Terraria.Enums;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -26,8 +24,8 @@ public class Shimmerale : ModItem
             new Color(178, 153, 245),
             new Color(139, 82, 210)
         ];
-        RelogicedUtil.OverrideShimmer(ItemID.Ale, Type, -1);
-        RelogicedUtil.OverrideShimmer(ItemID.Mug, Type, -1);
+        RelogicedUtil.OverrideShimmer(ItemID.Ale, Type);
+        RelogicedUtil.OverrideShimmer(ItemID.Mug, Type);
         
         Main.RegisterItemAnimation(Type, new DrawAnimationVertical(-1, 3)
         {

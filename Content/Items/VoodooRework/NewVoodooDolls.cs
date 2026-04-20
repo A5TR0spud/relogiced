@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using Relogiced.Other;
-using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 

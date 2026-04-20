@@ -1,10 +1,7 @@
-using System.Collections.Generic;
 using Relogiced.Content.Items.VoodooRework;
 using Terraria;
-using Terraria.GameContent;
 using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
-using Terraria.Localization;
 using Terraria.ModLoader;
 
 namespace Relogiced.Common.GlobalNPCs;
