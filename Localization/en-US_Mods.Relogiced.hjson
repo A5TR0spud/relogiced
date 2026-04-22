@@ -121,6 +121,7 @@ Configs: {
 				[c/AAAAAA:Lost Wisp Lantern Maximum Tile Check]
 				Controls how many tiles each Wisp projectile will calculate before
 				giving up its pathfinding and traveling in a straight line.
+				This does not affect its maximum range.
 				[c/FF7777:High values are likely to cause lag!]
 				'''
 		}
@@ -133,6 +134,7 @@ Configs: {
 				Serves as the global limit to all Wisp projectiles, preventing
 				any tile calculations that would result in more total checks per tick than
 				this setting.
+				This does not affect its maximum range.
 				[c/FF7777:High values are likely to cause lag!]
 				'''
 		}
