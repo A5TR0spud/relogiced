@@ -1,9 +1,0 @@
-{
-    "chat.extensionTools.enabled": false,
-    "chat.tools.autoExpandFailures": false,
-    "chat.tools.terminal.preventShellHistory": false,
-    "chat.tools.terminal.enableAutoApprove": false,
-    "chat.tools.todos.showWidget": false,
-    "chat.tools.renameTool.enabled": false,
-    "telemetry.feedback.enabled": false
-}
