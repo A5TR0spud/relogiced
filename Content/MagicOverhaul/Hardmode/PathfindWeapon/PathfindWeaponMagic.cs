@@ -68,8 +68,8 @@ public class PathfindWeaponMagic : ModItem
         if (player.netLifeTime % 6 == 0 && Main.rand.NextBool() || Main.rand.NextBool(4))
         {
             Vector2 pos = player.itemLocation + Item.scale * new Vector2((float)(13 * player.direction), -20f * player.gravDir);
-            pos += new Vector2(-5, 0);
             pos = player.RotatedRelativePoint(pos);
+            pos += new Vector2(-5, 0);
             Dust d = Dust.NewDustDirect(
                 pos,
                 10, 10, DustID.CoralTorch);
