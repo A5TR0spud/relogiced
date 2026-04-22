@@ -31,6 +31,17 @@ Configs: {
 			Label: Shop Changes
 			Tooltip: Rearranges and expands some NPC shops.
 		}
+
+		RarityChanges: {
+			Label: Rarity Changes
+			Tooltip:
+				'''
+				Changes the display color of some items to make more sense.
+				This should have nearly no bearing on any actual gameplay, but is kept
+				server-side to preserve lava destruction syncing and in case any
+				other mods rely on the rarity assignments.
+				'''
+		}
 	}
 
 	Client: {
@@ -92,6 +103,39 @@ Configs: {
 				Mana Flower and Mana Potions are also adjusted.
 				'''
 		}
+
+		AuxiliaryManaItems: {
+			Label: Auxiliary Magical Items
+			Tooltip: Adds mana-related items that aren't purely for damage-per-second.
+		}
+
+		HardmodeWeapons: {
+			Label: Hardmode Weapons
+			Tooltip: Fleshes out hardmode mage.
+		}
+
+		LostWispLanternMaximumTileCheck: {
+			Label: "[item:Relogiced/PathfindWeaponMagic] Maximum Tile Check"
+			Tooltip:
+				'''
+				[c/AAAAAA:Lost Wisp Lantern Maximum Tile Check]
+				Controls how many tiles each Wisp projectile will calculate before
+				giving up its pathfinding and traveling in a straight line.
+				[c/FF7777:High values are likely to cause lag!]
+				'''
+		}
+
+		LostWispLanternAbsoluteMaximumTileCheck: {
+			Label: "[item:Relogiced/PathfindWeaponMagic] Absolute Maximum Tile Check"
+			Tooltip:
+				'''
+				[c/AAAAAA:Lost Wisp Lantern Absolute Maximum Tile Check]
+				Serves as the global limit to all Wisp projectiles, preventing
+				any tile calculations that would result in more total checks per tick than
+				this setting.
+				[c/FF7777:High values are likely to cause lag!]
+				'''
+		}
 	}
 }
 
@@ -130,6 +174,15 @@ Items: {
 			'It tastes like stars'
 			'''
 	}
+
+	PathfindWeaponMagic: {
+		DisplayName: Lost Wisp Lantern
+		Tooltip:
+			'''
+			Evokes wisps that track enemies
+			Ignores 15 points of enemy Defense
+			'''
+	}
 }
 
 Chats: {
@@ -141,7 +194,10 @@ Chats: {
 	}
 }
 
-Projectiles.Suits.DisplayName: Card Suit
+Projectiles: {
+	Suits.DisplayName: Card Suit
+	SeekProjectile.DisplayName: Will-o'-the-wisp
+}
 
 Buffs: {
 	MaxManaBuff: {

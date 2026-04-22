@@ -11,7 +11,7 @@ public class Shimmerale : ModItem
 {
     public override bool IsLoadingEnabled(Mod mod)
     {
-        return Relogiced.ConfigMagicOverhaul.ManaRewrite;
+        return Relogiced.ConfigMagicOverhaul.ManaRewrite && Relogiced.ConfigMagicOverhaul.AuxiliaryManaItems;
     }
 
     public override void SetStaticDefaults()

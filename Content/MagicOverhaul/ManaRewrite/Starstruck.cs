@@ -7,7 +7,7 @@ public class Starstruck : ModBuff
 {
     public override bool IsLoadingEnabled(Mod mod)
     {
-        return Relogiced.ConfigMagicOverhaul.ManaRewrite;
+        return Relogiced.ConfigMagicOverhaul.ManaRewrite && Relogiced.ConfigMagicOverhaul.AuxiliaryManaItems;
     }
 
     public override void SetStaticDefaults()
@@ -17,7 +17,7 @@ public class Starstruck : ModBuff
 
     public override void Update(Player player, ref int buffIndex)
     {
-        player.GetModPlayer<ManaRewritePlayer>().starstruck = true;
+        player.GetModPlayer<ManaRewritePlayer>().Starstruck = true;
         player.statDefense -= 4;
         player.tipsy = true;
     }

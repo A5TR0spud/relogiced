@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Terraria;
@@ -42,38 +43,38 @@ public class ManaRewritePlayer : ModPlayer
         return orig(self, (int)(amount * (self.statMana - 1) / (float)self.statManaMax2 + 0.5f), true, true);
     }
 
-    public float manaTimer = 0;
-    public bool starstruck = false;
+    public float ManaTimer = 0;
+    public bool Starstruck = false;
 
     public override void PreUpdateBuffs()
     {
-        starstruck = false;
+        Starstruck = false;
     }
 
     public override void UpdateDead()
     {
-        manaTimer = 0;
+        ManaTimer = 0;
     }
 
     public override void OnRespawn()
     {
-        manaTimer = 0;
+        ManaTimer = 0;
     }
 
     public override void PostUpdate()
     {
         float toAdd = (Player.statManaMax2 - Player.statMana) / 10f;
-        if (starstruck)
+        if (Starstruck)
         {
             toAdd *= 1.5f;
             toAdd += 5f;
         }
-        manaTimer += toAdd;
-        if (manaTimer >= 60)
+        ManaTimer += toAdd;
+        if (ManaTimer >= 60)
         {
             if (Player.statMana < Player.statManaMax2)
                 Player.statMana++;
-            manaTimer -= 60;
+            ManaTimer -= 60;
         }
         Player.UpdateManaRegen();
     }
@@ -83,7 +84,7 @@ public class ManaRewritePlayer : ModPlayer
         if (!item.DamageType.CountsAsClass(DamageClass.Magic)) return;
         float forgiveness = Player.manaFlower ? 0.33f : 0.25f;
         float ratio = Player.statMana / (float)Player.statManaMax2;
-        if (starstruck)
+        if (Starstruck)
         {
             ratio = 1f - ratio;
         }

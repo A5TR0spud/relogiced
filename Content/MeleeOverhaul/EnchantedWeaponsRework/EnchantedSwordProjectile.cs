@@ -13,7 +13,7 @@ namespace Relogiced.Content.MeleeOverhaul.EnchantedWeaponsRework;
 
 public class EnchantedSwordProjectile : GlobalProjectile
 {
-    public static Asset<Texture2D> texAsset;
+    private static Asset<Texture2D> texAsset;
     public override void Load()
     {
         texAsset = TextureAssets.Projectile[ProjectileID.EnchantedBeam];

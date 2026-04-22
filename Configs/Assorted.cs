@@ -16,6 +16,9 @@ public class Assorted : ModConfig
     
     [ReloadRequired] [DefaultValue(true)]
     public bool ShopChanges;
+    
+    [ReloadRequired] [DefaultValue(true)]
+    public bool RarityChanges;
 
     [Header("Other")]
     [ReloadRequired] [DefaultValue(true)]
