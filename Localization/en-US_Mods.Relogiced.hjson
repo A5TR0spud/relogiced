@@ -113,6 +113,11 @@ Configs: {
 			Label: Hardmode Weapons
 			Tooltip: Fleshes out hardmode mage.
 		}
+	}
+
+	Performance: {
+		DisplayName: Performance: Server
+		Headers.Items: Items
 
 		LostWispLanternMaximumTileCheck: {
 			Label: "[item:Relogiced/PathfindWeaponMagic] Maximum Tile Check"
@@ -120,8 +125,10 @@ Configs: {
 				'''
 				[c/AAAAAA:Lost Wisp Lantern Maximum Tile Check]
 				Controls how many tiles each Wisp projectile will calculate before
-				giving up its pathfinding and traveling in a straight line.
+				giving up its pathfinding and traveling in what it estimates
+				to be the best direction.
 				This does not affect its maximum range.
+				If 0, disables pathfinding.
 				[c/FF7777:High values are likely to cause lag!]
 				'''
 		}
@@ -135,7 +142,23 @@ Configs: {
 				any tile calculations that would result in more total checks per tick than
 				this setting.
 				This does not affect its maximum range.
+				If 0, disables pathfinding.
 				[c/FF7777:High values are likely to cause lag!]
+				'''
+		}
+
+		LostWispLanternMaximumFramesToCheck: {
+			Label: "[item:Relogiced/PathfindWeaponMagic] Maximum Ticks to Check"
+			Tooltip:
+				'''
+				[c/AAAAAA:Lost Wisp Lantern Maximum Ticks to Check]
+				Allows failed pathfinding to continue its progress during the
+				specified amount of frames. This effectively improves maximum
+				tiles without causing performance issues.
+				High values may cause "indecisive" behavior at ranges
+				further than however many tiles it can check each frame.
+				This does not affect its maximum range.
+				If 0, disables pathfinding.
 				'''
 		}
 	}

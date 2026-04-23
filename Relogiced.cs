@@ -8,6 +8,7 @@ public class Relogiced : Mod
 	public static MeleeOverhaul ConfigMeleeOverhaul => ModContent.GetInstance<MeleeOverhaul>();
 	public static MagicOverhaul ConfigMagicOverhaul => ModContent.GetInstance<MagicOverhaul>();
 	public static Client ConfigClient => ModContent.GetInstance<Client>();
+	public static Performance ConfigPerformance => ModContent.GetInstance<Performance>();
 	public static Mod Instance => ModContent.GetInstance<Relogiced>();
 }
 

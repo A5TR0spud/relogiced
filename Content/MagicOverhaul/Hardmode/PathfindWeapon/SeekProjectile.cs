@@ -1,15 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using Relogiced.Other;
 using Terraria;
-using Terraria.DataStructures;
-using Terraria.GameContent;
+using Terraria.Chat;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 
 namespace Relogiced.Content.MagicOverhaul.Hardmode.PathfindWeapon;
@@ -127,6 +125,11 @@ public class SeekProjectile : ModProjectile
         return false;
     }
 
+    private List<Node> _openNodes = null;
+    private List<Node> _closedNodes = null;
+    private List<Point> _path = null;
+    private int _tries = 0;
+
     public override void AI()
     {
         Projectile.velocity *= 0.97f;
@@ -172,36 +175,111 @@ public class SeekProjectile : ModProjectile
             return;
         }
 
-        Target = nearestEnemy.whoAmI;
+        if (nearestEnemy.whoAmI != Target)
+        {
+            _path = null;
+            _tries = 0;
+            _openNodes = [];
+            _closedNodes = [];
+            Target = nearestEnemy.whoAmI;
+        }
 
-        List<Point> steps = PathfindingHelper.AStar(
+        bool pathfindingDisabled = Relogiced.ConfigPerformance.LostWispLanternMaximumFramesToCheck == 0 ||
+                                   Relogiced.ConfigPerformance.LostWispLanternAbsoluteMaximumTileCheck == 0 ||
+                                   Relogiced.ConfigPerformance.LostWispLanternMaximumTileCheck == 0;
+
+        if (pathfindingDisabled)
+        {
+            Projectile.tileCollide = false;
+        }
+        if (pathfindingDisabled || Collision.CanHit(Projectile, nearestEnemy))
+        {
+            Projectile.velocity *= 0.98f;
+            Projectile.velocity += 0.3f * (nearestEnemy.Center - Projectile.Center).SafeNormalize(Vector2.Zero);
+            return;
+        }
+        List<Point> steps = PathfindingHelper.AStarIterative(
             Projectile.Center.ToTileCoordinates(),
             nearestEnemy.Center.ToTileCoordinates(),
+            ref _openNodes,
+            ref _closedNodes,
+            out bool complete,
             width: Projectile.width,
             height: Projectile.height,
-            maxTilesToCheck: (int)Math.Min(Relogiced.ConfigMagicOverhaul.LostWispLanternMaximumTileCheck, Relogiced.ConfigMagicOverhaul.LostWispLanternAbsoluteMaximumTileCheck / SeekProjectileTicker.SeekProjectiles.Count),
+            failureMode: PathfindingHelper.FailureMode.PathToBest,
+            maxTilesToCheck: (int)Math.Min(Relogiced.ConfigPerformance.LostWispLanternMaximumTileCheck,
+                Relogiced.ConfigPerformance.LostWispLanternAbsoluteMaximumTileCheck /
+                SeekProjectileTicker.SeekProjectiles.Count),
             costFunction: (from, to) =>
             {
-                int num = 1;
+                bool fromSolid = Collision.SolidTiles(from.X, from.X, from.Y, from.Y);
+                bool toSolid = Collision.SolidTiles(to.X, to.X, to.Y, to.Y);
+                if (!fromSolid && toSolid)
+                    return null;
+                int num = 10;
                 foreach (Projectile proj in SeekProjectileTicker.SeekProjectiles)
                 {
                     if (proj.whoAmI == Projectile.whoAmI) continue;
                     if (to.ToWorldCoordinates().DistanceSQ(proj.Center) < 16 * 16)
-                        num += 16;
+                        num += 50;
+                }
+
+                if (!fromSolid)
+                {
+                    if (Collision.IsWorldPointSolid(to.ToWorldCoordinates(8, 24)))
+                        num += 3;
+                    if (Collision.IsWorldPointSolid(to.ToWorldCoordinates(24, 0)))
+                        num += 3;
+                    if (Collision.IsWorldPointSolid(to.ToWorldCoordinates(8, -8)))
+                        num += 3;
+                    if (Collision.IsWorldPointSolid(to.ToWorldCoordinates(-8, 8)))
+                        num += 3;
+                }
+
+                if (toSolid)
+                {
+                    num += 15;
                 }
 
                 return num;
             }
         );
-        
-        Projectile.tileCollide = steps.Count > 1 && !Collision.SolidCollision(Projectile.position, Projectile.width, Projectile.height);
 
-        Point nextStep = PathfindingHelper.NextStep(Projectile, steps);
+        bool totalFailure = _tries > Relogiced.ConfigPerformance.LostWispLanternMaximumFramesToCheck;
+
+        if (complete || totalFailure)
+        {
+            _path = steps;
+            _openNodes = null;
+            _closedNodes = null;
+            _tries = 0;
+        }
+        else
+        {
+            _tries++;
+        }
+
+        if (_path == null || _path.Count == 0)
+        {
+            Projectile.tileCollide = false;
+            return;
+        }
+
+        /*foreach (Point p in _path)
+        {
+            Dust.NewDustPerfect(p.ToWorldCoordinates(), DustID.Clentaminator_Green, Vector2.Zero);
+        }*/
+
+        Projectile.tileCollide =
+            !Collision.SolidCollision(Projectile.position, Projectile.width, Projectile.height);
+
+        Point? nextStep = PathfindingHelper.NextStep(Projectile, _path);
 
         Projectile.velocity *= 0.98f;
-        Vector2 force = 0.3f * (nextStep.ToWorldCoordinates() - Projectile.Center).SafeNormalize(Vector2.Zero);
-        //if (Projectile.Center.DistanceSQ(nextStep.ToWorldCoordinates()) < 16 * 16 && Projectile.velocity.LengthSquared() > 4)
-        //    Projectile.velocity *= 0.1f;
+        if (nextStep == null) return;
+
+        Vector2 force =
+            0.3f * (nextStep.Value.ToWorldCoordinates() - Projectile.Center).SafeNormalize(Vector2.Zero);
         if (Math.Sign(Projectile.velocity.X + force.X) != Math.Sign(force.X))
             Projectile.velocity.X *= 0.7f;
         if (Math.Sign(Projectile.velocity.Y + force.Y) != Math.Sign(force.Y))

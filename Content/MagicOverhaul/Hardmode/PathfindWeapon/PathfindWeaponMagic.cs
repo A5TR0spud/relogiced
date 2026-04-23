@@ -69,13 +69,13 @@ public class PathfindWeaponMagic : ModItem
         {
             Vector2 pos = player.itemLocation + Item.scale * new Vector2((float)(13 * player.direction), -20f * player.gravDir);
             pos = player.RotatedRelativePoint(pos);
-            pos += new Vector2(-5, 0);
+            pos += new Vector2(-5, player.gravDir < 0 ? -5 : 0);
             Dust d = Dust.NewDustDirect(
                 pos,
                 10, 10, DustID.CoralTorch);
             d.velocity *= 0.1f;
             d.noGravity = true;
-            d.velocity.Y -= 2 * player.gravity;
+            d.velocity.Y -= 2 * player.gravDir;
             d.position -= d.scale * new Vector2(3);
             d.fadeIn = 0.3f;
         }
