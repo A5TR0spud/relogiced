@@ -42,6 +42,15 @@ Configs: {
 				other mods rely on the rarity assignments.
 				'''
 		}
+
+		Epitaph: {
+			Label: Epitaph
+			Tooltip:
+			    '''
+			    Enables a special item that makes graveyard-exclusive
+			    items more accessible.
+			    '''
+		}
 	}
 
 	Client: {
@@ -206,6 +215,25 @@ Items: {
 			'''
 			Evokes wisps that track enemies
 			Ignores 15 points of enemy Defense
+			'''
+	}
+
+	ForgottenEpitaph: {
+		DisplayName: Desecrated Epitaph
+		Tooltip:
+			'''
+			Endues forth ill omen
+			<right> to restore
+			'Thy mother wast a vermin and thy father smelt of prunes.'
+			'''
+	}
+
+	Epitaph: {
+		DisplayName: Epitaph
+		Tooltip:
+			'''
+			When desecrated, hails the dead
+			<right> to desecrate
 			'''
 	}
 }

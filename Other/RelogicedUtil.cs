@@ -1,10 +1,14 @@
+using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using Terraria;
 using Terraria.Audio;
+using Terraria.Chat;
 using Terraria.GameContent;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 
 namespace Relogiced.Other;
@@ -19,23 +23,21 @@ public class RelogicedUtil : ModSystem
         Main.mouseRightRelease = false;
     }
 
-    private static List<int>[] _shimmerMap = ItemID.Sets.Factory.CreateCustomSet<List<int>>(null);
-    private static int[] _shimmerIndices = ItemID.Sets.Factory.CreateIntSet(0);
+    private static Dictionary<int, List<int>> _shimmerMap;
+    private static Dictionary<int, int> _shimmerIndices;
 
     public override void Load()
     {
-        for (int i = 0; i < ItemID.Sets.ShimmerTransformToItem.Length; i++)
-        {
-            _shimmerMap[i] = [ItemID.Sets.ShimmerTransformToItem[i]];
-        }
+        _shimmerMap = [];
+        _shimmerIndices = [];
         On_Item.GetShimmered += On_ItemOnGetShimmered;
     }
 
     public override void Unload()
     {
         On_Item.GetShimmered -= On_ItemOnGetShimmered;
-        _shimmerMap = ItemID.Sets.Factory.CreateCustomSet<List<int>>(null);
-        _shimmerIndices = ItemID.Sets.Factory.CreateIntSet(0);
+        _shimmerMap = [];
+        _shimmerIndices = [];
     }
 
     private void On_ItemOnGetShimmered(On_Item.orig_GetShimmered orig, Item self)
@@ -46,11 +48,12 @@ public class RelogicedUtil : ModSystem
 
     private static int GetShimmer(int inID)
     {
+        int actuallyItem = ItemID.Sets.ShimmerCountsAsItem[inID];
+        if (actuallyItem != -1)
+            inID = actuallyItem;
         int currentResult = ItemID.Sets.ShimmerTransformToItem[inID];
-        if (!_shimmerMap[inID].Contains(currentResult))
-        {
-            RegisterShimmer(inID, currentResult);
-        }
+        
+        RegisterShimmer(inID, currentResult);
         
         for (int i = _shimmerIndices[inID]; i < _shimmerIndices[inID] + _shimmerMap[inID].Count; i++)
         {
@@ -77,6 +80,7 @@ public class RelogicedUtil : ModSystem
         }
 
         ItemID.Sets.ShimmerTransformToItem[inID] = outID;
+        RegisterShimmer(inID, outID);
         for (int i = 0; i < _shimmerMap[inID].Count; i++)
         {
             if (_shimmerMap[inID][i] == expectedOutID)
@@ -87,6 +91,11 @@ public class RelogicedUtil : ModSystem
 
     public static void RegisterShimmer(int inID, int outID, bool reversible = false)
     {
+        if (!_shimmerMap.ContainsKey(inID))
+        {
+            _shimmerMap.Add(inID, [outID]);
+            _shimmerIndices.Add(inID, 0);
+        }
         if (!_shimmerMap[inID].Contains(outID))
             _shimmerMap[inID].Add(outID);
         
