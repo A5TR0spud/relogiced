@@ -21,7 +21,7 @@ public class Assorted : ModConfig
     public bool RarityChanges;
     
     [ReloadRequired] [DefaultValue(true)]
-    public bool Epitaph;
+    public bool ConditionFillers;
 
     [Header("Other")]
     [ReloadRequired] [DefaultValue(true)]

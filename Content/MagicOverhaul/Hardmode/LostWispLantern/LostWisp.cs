@@ -5,12 +5,11 @@ using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using Relogiced.Other;
 using Terraria;
-using Terraria.Chat;
+using Terraria.DataStructures;
 using Terraria.ID;
-using Terraria.Localization;
 using Terraria.ModLoader;
 
-namespace Relogiced.Content.MagicOverhaul.Hardmode.PathfindWeapon;
+namespace Relogiced.Content.MagicOverhaul.Hardmode.LostWispLantern;
 
 public class SeekProjectileTicker : ModSystem
 {
@@ -26,19 +25,19 @@ public class SeekProjectileTicker : ModSystem
         SeekProjectiles.Clear();
         foreach (Projectile proj in Main.ActiveProjectiles)
         {
-            if (proj.type == ModContent.ProjectileType<SeekProjectile>())
+            if (proj.type == ModContent.ProjectileType<LostWisp>())
                 SeekProjectiles.Add(proj);
         }
     }
 }
 
-public class SeekProjectile : ModProjectile
+public class LostWisp : ModProjectile
 {    
     private static Asset<Texture2D> texAsset;
     
     public override void Load()
     {
-        texAsset = Relogiced.Instance.Assets.Request<Texture2D>("Content/MagicOverhaul/Hardmode/PathfindWeapon/SeekProjectile");
+        texAsset = ModContent.Request<Texture2D>(Texture);
     }
 
     public int Target
@@ -82,6 +81,16 @@ public class SeekProjectile : ModProjectile
         FadeIn = FADE_IN_TIME;
         Projectile.Opacity = 0;
         Projectile.stopsDealingDamageAfterPenetrateHits = true;
+    }
+
+    public override void OnSpawn(IEntitySource source)
+    {
+        if (source is EntitySource_TileUpdate)
+        {
+            Projectile.maxPenetrate = 1;
+            Projectile.penetrate = 1;
+            Projectile.timeLeft += 60;
+        }
     }
 
     public override bool OnTileCollide(Vector2 oldVelocity)

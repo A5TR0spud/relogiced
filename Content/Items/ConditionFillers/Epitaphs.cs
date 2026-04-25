@@ -19,7 +19,7 @@ public class EpitaphPlayer : ModPlayer
 {
     public override bool IsLoadingEnabled(Mod mod)
     {
-        return Relogiced.ConfigAssorted.Epitaph;
+        return Relogiced.ConfigAssorted.ConditionFillers;
     }
 
     public override void Load()
@@ -140,7 +140,7 @@ public abstract class EpitaphBase : ModItem
 {
     public override bool IsLoadingEnabled(Mod mod)
     {
-        return Relogiced.ConfigAssorted.Epitaph;
+        return Relogiced.ConfigAssorted.ConditionFillers;
     }
     
     public override void SetDefaults()

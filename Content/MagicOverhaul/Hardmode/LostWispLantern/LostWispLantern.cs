@@ -1,15 +1,13 @@
-using System;
 using Microsoft.Xna.Framework;
-using Relogiced.Other;
-using Terraria.ID;
-using Terraria.ModLoader;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
+using Terraria.ID;
+using Terraria.ModLoader;
 
-namespace Relogiced.Content.MagicOverhaul.Hardmode.PathfindWeapon;
+namespace Relogiced.Content.MagicOverhaul.Hardmode.LostWispLantern;
 
-public class PathfindWeaponMagic : ModItem
+public class LostWispLantern : ModItem
 {
     public override bool IsLoadingEnabled(Mod mod)
     {
@@ -23,7 +21,7 @@ public class PathfindWeaponMagic : ModItem
         Item.DamageType = DamageClass.Magic;
         Item.rare = ItemRarityID.Pink;
         Item.value = Item.sellPrice(gold: 5);
-        Item.shoot = ModContent.ProjectileType<SeekProjectile>();
+        Item.shoot = ModContent.ProjectileType<LostWisp>();
         Item.shootSpeed = 10f;
         Item.mana = 12;
         SoundStyle sound = SoundID.Item29;
@@ -40,7 +38,7 @@ public class PathfindWeaponMagic : ModItem
         Item.autoReuse = true;
         Item.noMelee = true;
     }
-
+    
     public override void AddRecipes()
     {
         Recipe.Create(Type)
@@ -103,7 +101,7 @@ public class PathfindWeaponMagicDraw : ModPlayer
 
     public override void ModifyDrawInfo(ref PlayerDrawSet drawInfo)
     {
-        if (Player.HeldItem.type == ModContent.ItemType<PathfindWeaponMagic>())
+        if (Player.HeldItem.type == ModContent.ItemType<LostWispLantern>())
             drawInfo.weaponDrawOrder = WeaponDrawOrder.BehindBackArm;
     }
 }

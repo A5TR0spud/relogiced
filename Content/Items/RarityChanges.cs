@@ -21,6 +21,14 @@ public class RarityChanges : GlobalItem
         }
 
         if (item.type is
+            ItemID.RubblemakerLarge or
+            ItemID.RubblemakerMedium or
+            ItemID.RubblemakerSmall)
+        {
+            item.rare = ItemRarityID.Green;
+        }
+
+        if (item.type is
             ItemID.LihzahrdAltar or
             ItemID.LihzahrdBanner or
             ItemID.LihzahrdBathtub or

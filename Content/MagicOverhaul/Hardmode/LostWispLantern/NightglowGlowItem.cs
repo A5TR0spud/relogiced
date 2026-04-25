@@ -3,7 +3,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace Relogiced.Content.MagicOverhaul.Hardmode.PathfindWeapon;
+namespace Relogiced.Content.MagicOverhaul.Hardmode.LostWispLantern;
 
 public class NightglowGlowItem : GlobalItem
 {

@@ -43,12 +43,13 @@ Configs: {
 				'''
 		}
 
-		Epitaph: {
-			Label: Epitaph
+		ConditionFillers: {
+			Label: Forgiving Conditions
 			Tooltip:
 				'''
-				Enables a special item that makes graveyard-exclusive
-				items more accessible.
+				Enables special items or behavior to make conditional content
+				more accessible. For example, Honey Dispenser counts as honey
+				for crafting and a new item allows easy graveyard loot.
 				'''
 		}
 	}
@@ -129,7 +130,7 @@ Configs: {
 		Headers.Items: Items
 
 		LostWispLanternMaximumTileCheck: {
-			Label: "[item:Relogiced/PathfindWeaponMagic] Maximum Tile Check"
+			Label: "[item:Relogiced/LostWispLantern] Maximum Tile Check"
 			Tooltip:
 				'''
 				[c/AAAAAA:Lost Wisp Lantern Maximum Tile Check]
@@ -143,7 +144,7 @@ Configs: {
 		}
 
 		LostWispLanternAbsoluteMaximumTileCheck: {
-			Label: "[item:Relogiced/PathfindWeaponMagic] Absolute Maximum Tile Check"
+			Label: "[item:Relogiced/LostWispLantern] Absolute Maximum Tile Check"
 			Tooltip:
 				'''
 				[c/AAAAAA:Lost Wisp Lantern Absolute Maximum Tile Check]
@@ -157,7 +158,7 @@ Configs: {
 		}
 
 		LostWispLanternMaximumFramesToCheck: {
-			Label: "[item:Relogiced/PathfindWeaponMagic] Maximum Ticks to Check"
+			Label: "[item:Relogiced/LostWispLantern] Maximum Ticks to Check"
 			Tooltip:
 				'''
 				[c/AAAAAA:Lost Wisp Lantern Maximum Ticks to Check]
@@ -209,7 +210,7 @@ Items: {
 			'''
 	}
 
-	PathfindWeaponMagic: {
+	LostWispLantern: {
 		DisplayName: Lost Wisp Lantern
 		Tooltip:
 			'''
@@ -224,7 +225,7 @@ Items: {
 			'''
 			Endues forth ill omen
 			<right> to restore
-			'The inscription is unintelligible'
+			'The inscription is faded'
 			'''
 	}
 
@@ -237,6 +238,11 @@ Items: {
 			'{0}'
 			'''
 		Epithet: You died!
+	}
+
+	HauntedBrazier: {
+		DisplayName: Haunted Brazier
+		Tooltip: "'Whose side are you on?'"
 	}
 }
 
@@ -251,7 +257,7 @@ Chats: {
 
 Projectiles: {
 	Suits.DisplayName: Card Suit
-	SeekProjectile.DisplayName: Will-o'-the-wisp
+	LostWisp.DisplayName: Will-o'-the-wisp
 }
 
 Buffs: {
