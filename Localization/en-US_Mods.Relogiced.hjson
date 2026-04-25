@@ -46,10 +46,10 @@ Configs: {
 		Epitaph: {
 			Label: Epitaph
 			Tooltip:
-			    '''
-			    Enables a special item that makes graveyard-exclusive
-			    items more accessible.
-			    '''
+				'''
+				Enables a special item that makes graveyard-exclusive
+				items more accessible.
+				'''
 		}
 	}
 
@@ -224,7 +224,7 @@ Items: {
 			'''
 			Endues forth ill omen
 			<right> to restore
-			'Thy mother wast a vermin and thy father smelt of prunes.'
+			'The inscription is unintelligible'
 			'''
 	}
 
@@ -234,7 +234,9 @@ Items: {
 			'''
 			When desecrated, hails the dead
 			<right> to desecrate
+			'{0}'
 			'''
+		Epithet: You died!
 	}
 }
 

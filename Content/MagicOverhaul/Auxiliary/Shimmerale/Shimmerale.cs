@@ -25,8 +25,8 @@ public class Shimmerale : ModItem
             new Color(178, 153, 245),
             new Color(139, 82, 210)
         ];
-        RelogicedUtil.OverrideShimmer(ItemID.Ale, Type);
-        RelogicedUtil.OverrideShimmer(ItemID.Mug, Type);
+        TransmuteHelper.OverrideShimmer(ItemID.Ale, Type);
+        TransmuteHelper.OverrideShimmer(ItemID.Mug, Type);
         
         Main.RegisterItemAnimation(Type, new DrawAnimationVertical(-1, 3)
         {

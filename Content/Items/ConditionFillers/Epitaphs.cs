@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using Humanizer;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -8,44 +11,9 @@ using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
+using Terraria.ModLoader.IO;
 
 namespace Relogiced.Content.Items.ConditionFillers;
-
-public class EpitaphNPC : GlobalNPC
-{
-    public override bool IsLoadingEnabled(Mod mod)
-    {
-        return Relogiced.ConfigAssorted.Epitaph;
-    }
-
-    public override void OnKill(NPC npc)
-    {
-        Player nearestHardcorePlayer = null;
-        float dist = -1;
-        foreach (Player player in Main.ActivePlayers)
-        {
-            if (player.difficulty != PlayerDifficultyID.Hardcore) continue;
-            float newDist = player.Center.DistanceSQ(npc.Center);
-            if (nearestHardcorePlayer == null || dist < 0 || newDist < dist)
-            {
-                nearestHardcorePlayer = player;
-                dist = newDist;
-            }
-        }
-
-        if (dist < 0 || nearestHardcorePlayer == null) return;
-        
-        if (!Main.rand.NextBool(EpitaphPlayer.GetConsequentForEpitaphDrop(nearestHardcorePlayer))) return;
-        Item toDrop = new Item(ModContent.ItemType<ForgottenEpitaph>());
-        toDrop.noGrabDelay = 100;
-        Item.NewItem(
-            npc.GetSource_DropAsItem(),
-            npc.Center,
-            toDrop,
-            noGrabDelay: true
-        );
-    }
-}
 
 public class EpitaphPlayer : ModPlayer
 {
@@ -57,36 +25,28 @@ public class EpitaphPlayer : ModPlayer
     public override void Load()
     {
         On_Player.UpdateGraveyard += On_PlayerOnUpdateGraveyard;
+        On_Player.DropTombstone += On_PlayerOnDropTombstone;
+        On_NPC.DropTombstoneTownNPC += On_NPCOnDropTombstoneTownNPC;
     }
 
-    public override void Unload()
+    private void On_PlayerOnDropTombstone(On_Player.orig_DropTombstone orig, Player self, long coinsOwned, NetworkText deathText, int hitDirection)
     {
-        On_Player.UpdateGraveyard -= On_PlayerOnUpdateGraveyard;
+        if (self.difficulty == PlayerDifficultyID.Hardcore ||
+            !ReplaceTombstoneWithEpitaph(self, self.GetModPlayer<EpitaphPlayer>().AccurseMe ? 30 : 0, deathText))
+            orig(self, coinsOwned, deathText, hitDirection);
     }
 
-    public override void Kill(double damage, int hitDirection, bool pvp, PlayerDeathReason damageSource)
+    private void On_NPCOnDropTombstoneTownNPC(On_NPC.orig_DropTombstoneTownNPC orig, NPC self, NetworkText deathText)
     {
-        if (Main.netMode is not NetmodeID.SinglePlayer and not NetmodeID.Server)
-            return;
-        
-        if (Player.difficulty != PlayerDifficultyID.Hardcore && !Main.rand.NextBool(GetConsequentForEpitaphDrop(Player))) return;
-        Item toDrop = new Item(ModContent.ItemType<ForgottenEpitaph>());
-        toDrop.noGrabDelay = 100;
-        Item.NewItem(
-            Player.GetSource_DropAsItem(),
-            Player.Center,
-            toDrop,
-            noGrabDelay: true
-        );
+        if (!ReplaceTombstoneWithEpitaph(self, 10, deathText))
+            orig(self, deathText);
     }
 
-    public static int GetConsequentForEpitaphDrop(Player player)
+    public static bool ReplaceTombstoneWithEpitaph(Entity originator, int consequentDelta, NetworkText deathText)
     {
-        int consequent = 10;
-        if (player.GetModPlayer<EpitaphPlayer>().PreviouslyAccursed)
-        {
-            consequent *= 2;
-        }
+        if (Main.netMode == NetmodeID.MultiplayerClient)
+            return false;
+        int consequent = 10 + consequentDelta;
         if (Main.expertMode)
         {
             consequent += 5;
@@ -99,6 +59,10 @@ public class EpitaphPlayer : ModPlayer
         {
             consequent /= 2;
         }
+        if (NPC.downedAncientCultist)
+        {
+            consequent += 3;
+        }
         if (Main.hardMode)
         {
             consequent = (int)(consequent * 0.85f);
@@ -107,8 +71,23 @@ public class EpitaphPlayer : ModPlayer
         {
             consequent += 3;
         }
+        if (!Main.rand.NextBool(consequent)) return false;
+        
+        Item toDrop = new Item(ModContent.ItemType<Epitaph>());
+        ((Epitaph)toDrop.ModItem).DeathMessage = deathText;
+        toDrop.noGrabDelay = 100;
+        Item.NewItem(
+            originator.GetSource_Death(),
+            originator.Center,
+            toDrop,
+            noGrabDelay: true
+        );
+        return true;
+    }
 
-        return consequent;
+    public override void Unload()
+    {
+        On_Player.UpdateGraveyard -= On_PlayerOnUpdateGraveyard;
     }
 
     private void On_PlayerOnUpdateGraveyard(On_Player.orig_UpdateGraveyard orig, Player self, bool now)
@@ -137,7 +116,6 @@ public class EpitaphPlayer : ModPlayer
 
     public override void PostUpdate()
     {
-        //AccursedThing = Player.HasItemInInventoryOrOpenVoidBag(ModContent.ItemType<ForgottenEpitaph>());
         AccurseMe = AccursedThing;
         if (Main.netMode == NetmodeID.MultiplayerClient)
         {
@@ -158,20 +136,13 @@ public class EpitaphPlayer : ModPlayer
     }
 }
 
-public class Epitaph : ModItem
+public abstract class EpitaphBase : ModItem
 {
     public override bool IsLoadingEnabled(Mod mod)
     {
         return Relogiced.ConfigAssorted.Epitaph;
     }
-
-    //public override LocalizedText Tooltip => Relogiced.Instance.GetLocalization("Items.Epitaph.Tooltip").WithFormatArgs(Main.LocalPlayer.name);
-
-    public override void SetStaticDefaults()
-    {
-        ItemID.Sets.ShimmerCountsAsItem[Type] = ModContent.ItemType<ForgottenEpitaph>();
-    }
-
+    
     public override void SetDefaults()
     {
         Item.rare = ItemRarityID.Blue;
@@ -179,6 +150,55 @@ public class Epitaph : ModItem
         Item.maxStack = 1;
     }
 
+    public override ModItem Clone(Item newEntity)
+    {
+        if (newEntity.type == ModContent.ItemType<Epitaph>() || newEntity.type == ModContent.ItemType<ForgottenEpitaph>())
+        {
+            EpitaphBase e = null;
+            if (newEntity.ModItem is EpitaphBase eepb)
+                e = eepb;
+            else
+                e = (EpitaphBase)(new Item(newEntity.type).ModItem);
+            e.DeathMessage = DeathMessage;
+            e.Inscription = Inscription ?? DeathMessage.ToString();
+        }
+        return base.Clone(newEntity);
+    }
+
+    public NetworkText DeathMessage = NetworkText.Empty;
+    
+    public string Inscription = null;
+
+    public override void NetReceive(BinaryReader reader)
+    {
+        DeathMessage = NetworkText.Deserialize(reader);
+        Inscription = DeathMessage.ToString();
+    }
+
+    public override void NetSend(BinaryWriter writer)
+    {
+        if (DeathMessage == NetworkText.Empty && !string.IsNullOrEmpty(Inscription))
+        {
+            DeathMessage = NetworkText.FromLiteral(Inscription);
+        }
+        DeathMessage.Serialize(writer);
+    }
+
+    public override void SaveData(TagCompound tag)
+    {
+        if (string.IsNullOrEmpty(Inscription))
+        {
+            Inscription = DeathMessage.ToString();
+        }
+        if (string.IsNullOrEmpty(Inscription)) return;
+        tag.Set("Epithet", Inscription);
+    }
+    
+    public override void LoadData(TagCompound tag)
+    {
+        Inscription = tag.ContainsKey("Epithet") ? tag.GetString("Epithet") : Relogiced.Instance.GetLocalization("Items.Epitaph.Epithet").Value;
+    }
+    
     public override bool CanRightClick()
     {
         return true;
@@ -188,25 +208,54 @@ public class Epitaph : ModItem
     {
         return false;
     }
-
+    
     public override void RightClick(Player player)
     {
-        RelogicedUtil.ChangeItemTypeFromRMB(Item, ModContent.ItemType<ForgottenEpitaph>());
+        bool isALongForgottenMonument = Item.type == ModContent.ItemType<ForgottenEpitaph>();
+        int itemTypeToBecome =
+            isALongForgottenMonument ? ModContent.ItemType<Epitaph>() : ModContent.ItemType<ForgottenEpitaph>();
+        string beforeI = Inscription;
+        NetworkText beforeD = DeathMessage;
+        if (RelogicedUtil.ChangeItemTypeFromRMB(Item, itemTypeToBecome) && Item.ModItem is EpitaphBase eepb)
+        {
+            eepb.Inscription = beforeI;
+            eepb.DeathMessage = beforeD;
+        }
     }
 }
 
-public class ForgottenEpitaph : ModItem
+public class Epitaph : EpitaphBase
 {
-    public override bool IsLoadingEnabled(Mod mod)
+    public override void ModifyTooltips(List<TooltipLine> tooltips)
     {
-        return Relogiced.ConfigAssorted.Epitaph;
+        foreach (TooltipLine line in tooltips)
+        {
+            if (line.FullName == "Terraria/Tooltip2")
+            {
+                line.Text = line.Text.FormatWith(_string_args());
+                break;
+            }
+        }
     }
 
-    public override void SetDefaults()
+    private string _string_args()
     {
-        Item.CloneDefaults(ModContent.ItemType<Epitaph>());
+        if (DeathMessage != null && DeathMessage != NetworkText.Empty)
+        {
+            return DeathMessage.ToString();
+        }
+
+        return Inscription ?? Relogiced.Instance.GetLocalization("Items.Epitaph.Epithet").Value;
     }
 
+    public override void SetStaticDefaults()
+    {
+        ItemID.Sets.ShimmerCountsAsItem[Type] = ModContent.ItemType<ForgottenEpitaph>();
+    }
+}
+
+public class ForgottenEpitaph : EpitaphBase
+{
     public override void UpdateInventory(Player player)
     {
         player.GetModPlayer<EpitaphPlayer>().AccursedThing = true;
@@ -249,20 +298,5 @@ public class ForgottenEpitaph : ModItem
             .DisableDecraft()
             .AddCondition(Condition.InGraveyard)
             .Register();
-    }
-
-    public override bool CanRightClick()
-    {
-        return true;
-    }
-    
-    public override bool ConsumeItem(Player player)
-    {
-        return false;
-    }
-
-    public override void RightClick(Player player)
-    {
-        RelogicedUtil.ChangeItemTypeFromRMB(Item, ModContent.ItemType<Epitaph>());
     }
 }
