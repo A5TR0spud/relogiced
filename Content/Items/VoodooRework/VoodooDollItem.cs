@@ -48,4 +48,16 @@ public abstract class VoodooDollItem : ModItem
         Item.value = Item.buyPrice(silver: 50);
         Item.rare = ItemRarityID.Blue;
     }
+
+    //TODO: verify this works instead of the old system
+    public override void UpdateInventory(Player player)
+    {
+        ModVoodooPlayer plr = player.GetModPlayer<ModVoodooPlayer>();
+        foreach (int associatedNPC in AssociatedNPCs())
+        {
+            if (associatedNPC == 0 || plr.KillableNPCs.Contains(associatedNPC))
+                continue;
+            plr.KillableNPCs.Add(associatedNPC);
+        }
+    }
 }

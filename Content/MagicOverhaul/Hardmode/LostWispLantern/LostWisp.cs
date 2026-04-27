@@ -64,6 +64,7 @@ public class LostWisp : ModProjectile
     public override void SetStaticDefaults()
     {
         Main.projFrames[Type] = 4;
+        ProjectileID.Sets.CultistIsResistantTo[Type] = true;
     }
 
     public override void SetDefaults()

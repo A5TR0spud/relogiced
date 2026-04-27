@@ -56,7 +56,7 @@ public class HauntedBrazierTile : ModTile
             cursor.Emit(OpCodes.Ldelem_I4);
             //gravetiles counts individual tiles, i.e., each tombstone increases graveTiles by 4.
             cursor.EmitDelegate<Func<int, int, int>>((graveTiles, hauntedBraziers) =>
-	            graveTiles + 4 * hauntedBraziers / 6
+	            graveTiles + 2 * hauntedBraziers / 6 //2/6: each brazier counts as half a tombstone
 	        );
             cursor.Emit<SceneMetrics>(OpCodes.Call, "set_GraveyardTileCount");
         }

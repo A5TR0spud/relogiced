@@ -19,6 +19,14 @@ public class GlobalVoodooItem : GlobalItem
         return entity.type is ItemID.GuideVoodooDoll or ItemID.ClothierVoodooDoll;
     }
 
+    public override void UpdateInventory(Item item, Player player)
+    {
+        if (item.type == ItemID.GuideVoodooDoll)
+            player.killGuide = true;
+        else
+            player.killClothier = true;
+    }
+
     public override bool CanRightClick(Item item)
     {
         return true;

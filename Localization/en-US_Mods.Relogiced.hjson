@@ -172,6 +172,16 @@ Configs: {
 				'''
 		}
 	}
+
+	RangedOverhaul: {
+		DisplayName: Ranged Overhaul
+		Headers.Items: Items Header
+
+		Chekhov: {
+			Label: Chekhov
+			Tooltip: ""
+		}
+	}
 }
 
 Items: {
@@ -233,7 +243,7 @@ Items: {
 		DisplayName: Epitaph
 		Tooltip:
 			'''
-			When desecrated, hails the dead
+			When desecrated, hails the undead
 			<right> to desecrate
 			'{0}'
 			'''
@@ -242,7 +252,12 @@ Items: {
 
 	HauntedBrazier: {
 		DisplayName: Haunted Brazier
-		Tooltip: "'Whose side are you on?'"
+		Tooltip: Attracts the dead and undead alike
+	}
+
+	Chekhov: {
+		DisplayName: Chekhov
+		Tooltip: "'Will it ever fire?'"
 	}
 }
 
@@ -258,6 +273,7 @@ Chats: {
 Projectiles: {
 	Suits.DisplayName: Card Suit
 	LostWisp.DisplayName: Will-o'-the-wisp
+	PlotDevice.DisplayName: Plot Device
 }
 
 Buffs: {

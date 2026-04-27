@@ -193,10 +193,25 @@ public abstract class EpitaphBase : ModItem
         if (string.IsNullOrEmpty(Inscription)) return;
         tag.Set("Epithet", Inscription);
     }
+
+    public string GetInscription()
+    {
+        if (DeathMessage != null && DeathMessage != NetworkText.Empty && !string.IsNullOrEmpty(DeathMessage.ToString()))
+        {
+            return DeathMessage.ToString();
+        }
+
+        if (string.IsNullOrEmpty(Inscription))
+        {
+            return Relogiced.Instance.GetLocalization("Items.Epitaph.Epithet").Value;
+        }
+
+        return Inscription;
+    }
     
     public override void LoadData(TagCompound tag)
     {
-        Inscription = tag.ContainsKey("Epithet") ? tag.GetString("Epithet") : Relogiced.Instance.GetLocalization("Items.Epitaph.Epithet").Value;
+        Inscription = tag.ContainsKey("Epithet") ? tag.GetString("Epithet") : null;
     }
     
     public override bool CanRightClick()
@@ -232,20 +247,10 @@ public class Epitaph : EpitaphBase
         {
             if (line.FullName == "Terraria/Tooltip2")
             {
-                line.Text = line.Text.FormatWith(_string_args());
+                line.Text = line.Text.FormatWith(GetInscription());
                 break;
             }
         }
-    }
-
-    private string _string_args()
-    {
-        if (DeathMessage != null && DeathMessage != NetworkText.Empty)
-        {
-            return DeathMessage.ToString();
-        }
-
-        return Inscription ?? Relogiced.Instance.GetLocalization("Items.Epitaph.Epithet").Value;
     }
 
     public override void SetStaticDefaults()
