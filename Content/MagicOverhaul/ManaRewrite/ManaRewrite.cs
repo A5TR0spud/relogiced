@@ -60,10 +60,21 @@ public class ManaRewritePlayer : ModPlayer
     {
         ManaTimer = 0;
     }
+    
+    public float ManaForgiveness = 0.25f;
+
+    public override void ResetEffects()
+    {
+        ManaForgiveness = 0.25f;
+    }
 
     public override void PostUpdate()
     {
         float toAdd = (Player.statManaMax2 - Player.statMana) / 10f;
+        if (Player.manaFlower)
+            ManaForgiveness += 0.08f;
+        if (Starstruck)
+            ManaForgiveness += 0.08f;
         if (Starstruck)
         {
             toAdd *= 1.5f;
@@ -82,12 +93,13 @@ public class ManaRewritePlayer : ModPlayer
     public override void ModifyWeaponDamage(Item item, ref StatModifier damage)
     {
         if (!item.DamageType.CountsAsClass(DamageClass.Magic)) return;
-        float forgiveness = Player.manaFlower ? 0.33f : 0.25f;
         float ratio = Player.statMana / (float)Player.statManaMax2;
         if (Starstruck)
         {
             ratio = 1f - ratio;
         }
+
+        float forgiveness = Math.Clamp(ManaForgiveness, 0, 1);
         float penalty = forgiveness + (1f - forgiveness) * ratio;
         damage *= penalty;
     }

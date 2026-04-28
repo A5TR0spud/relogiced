@@ -274,6 +274,7 @@ Projectiles: {
 	Suits.DisplayName: Card Suit
 	LostWisp.DisplayName: Will-o'-the-wisp
 	PlotDevice.DisplayName: Plot Device
+	ChekhovVisualizer.DisplayName: Chekhov Indicator
 }
 
 Buffs: {

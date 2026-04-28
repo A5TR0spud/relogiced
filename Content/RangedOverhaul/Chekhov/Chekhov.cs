@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.Enums;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
@@ -26,7 +27,13 @@ public class Chekhov : ModItem
         Item.shootSpeed = 10;
         Item.knockBack = 8;
         Item.useTime = 30;
-        Item.value = Item.buyPrice(gold: 50);
+        Item.value = Item.sellPrice(gold: 2, silver: 50);
+    }
+
+    public override bool ReforgePrice(ref int reforgePrice, ref bool canApplyDiscount)
+    {
+        reforgePrice = Item.buyPrice(gold: 20) * 3;
+        return false;
     }
 
     public override bool CanUseItem(Player player)
@@ -61,7 +68,7 @@ public class ChekhovShopHelper : GlobalNPC
     {
         if (nextSlot >= shop.Length)
             return;
-        if (Main.rand.NextBool(Main.hardMode ? 1000 : 300))
+        if (Main.GetMoonPhase() == MoonPhase.Full && !Main.hardMode && Main.rand.NextBool(400))
         {
             shop[nextSlot++] = ModContent.ItemType<Chekhov>();
         }
@@ -89,7 +96,7 @@ public class ChekhovPlayer : ModPlayer
     public int ChekhovGunCounter = 0;
     private const string COUNTER_KEY = "ChekhovGunCounter";
     public Item FirstChekhov = null;
-    private const int INTERVALS_PER_SHOT = 30 * 24 * 60 / 5;
+    private const int INTERVALS_PER_SHOT = 45 * 30 * 60 / 5; //leading term is approximate time to trigger, in minutes
 
     public override void SaveData(TagCompound tag)
     {
@@ -135,44 +142,17 @@ public class ChekhovPlayer : ModPlayer
 
     private bool TryChekhov()
     {
-        NPC nearest = null;
-        float cost = 0;
-        foreach (NPC npc in Main.ActiveNPCs)
-        {
-            if (!npc.CanBeChasedBy())
-                continue;
-            if (npc.life <= 0)
-                continue;
-            float newCost = npc.Distance(Player.Center);
-            if (!Collision.CanHit(Player, npc))
-                newCost *= 2;
-            if (newCost > 16 * 100) //100 tile range (40 tiles off-screen horizontally)
-                continue;
-            newCost -= 16f * 3f * (float)Math.Log10(npc.life);
-            //zombie (40HP): 4.8 tiles closer
-            //mimic (500HP): 8.1 tiles closer
-            //wyvern (4000HP): 10.8 tiles closer
-            //master destroyer (153000HP): 15.6 tiles closer
-            if (npc.boss)
-                newCost -= 16 * 10; //treat it 10 tiles closer if it's a boss
-            if (npc.life < Player.GetWeaponDamage(FirstChekhov))
-                newCost += 16 * 10; //if damage would be wasted, be harsh
-            newCost += Main.rand.NextFloat(-64f, 64f + float.Epsilon); //where's the fun if there's no gambling?
-            if (newCost > cost && nearest != null)
-                continue;
-            nearest = npc;
-            cost = newCost;
-        }
+        NPC nearest = PlotDevice.GetChekhovTarget(Player.Center, Player);
 
         if (nearest != null && Player.PickAmmo(FirstChekhov,
                 out int projToCopyExtraUpdatesOf,
                 out float speed,
                 out int damage,
                 out float kb,
-                out int _))
+                out int ammoItemID))
         {
             Projectile proj = Projectile.NewProjectileDirect(
-                FirstChekhov.GetSource_FromThis(),
+                Player.GetSource_ItemUse_WithPotentialAmmo(FirstChekhov, ammoItemID),
                 Player.Center,
                 speed * (nearest.Center - Player.Center).SafeNormalize(-Vector2.UnitY),
                 ModContent.ProjectileType<PlotDevice>(),
@@ -184,6 +164,14 @@ public class ChekhovPlayer : ModPlayer
             );
             proj.CritChance += Player.GetWeaponCrit(FirstChekhov);
             proj.ArmorPenetration += Player.GetWeaponArmorPenetration(FirstChekhov);
+            Projectile.NewProjectile(
+                Player.GetSource_FromThis(),
+                Player.Top,
+                new Vector2(Main.rand.NextFloat(-0.5f, 0.5f), -2),
+                ModContent.ProjectileType<ChekhovVisualizer>(),
+                0,
+                0
+            );
             return true;
         }
 
