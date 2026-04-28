@@ -258,6 +258,11 @@ Items: {
 	Chekhov: {
 		DisplayName: Chekhov
 		Tooltip: "'Will it ever fire?'"
+		TooltipActive:
+			'''
+			Occasionally delivers a deathblow
+			'It only takes one bullet'
+			'''
 	}
 }
 

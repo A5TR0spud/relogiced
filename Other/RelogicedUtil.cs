@@ -1,15 +1,12 @@
-using System;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using Terraria;
 using Terraria.Audio;
-using Terraria.Chat;
 using Terraria.GameContent;
 using Terraria.ID;
-using Terraria.Localization;
 using Terraria.ModLoader;
+using Terraria.UI;
 
 namespace Relogiced.Other;
 
@@ -22,6 +19,35 @@ public class RelogicedUtil : ModSystem
         Main.stackSplit = 30;
         Main.mouseRightRelease = false;
         return true;
+    }
+
+    public static void ReplaceTooltip(List<TooltipLine> tooltips, string newTooltipKey)
+    {
+        bool delete = false;
+        int firstIndex = 0;
+        int indicesToDelete = 0;
+        for (int i = 0; i < tooltips.Count; i++)
+        {
+            TooltipLine line = tooltips[i];
+            if (line.Name.StartsWith("Tooltip"))
+            {
+                if (delete)
+                {
+                    indicesToDelete++;
+                    continue;
+                }
+                ItemTooltip t = ItemTooltip.FromLocalization(Relogiced.Instance.GetLocalization(newTooltipKey));
+                line.Text = t.GetLine(0);
+                firstIndex = i;
+                for (int j = 1; j < t.Lines; j++)
+                {
+                    firstIndex++;
+                    tooltips.Insert(i + j, new TooltipLine(Relogiced.Instance, "Tooltip" + j, t.GetLine(j)));
+                }
+                delete = true;
+            }
+        }
+        tooltips.RemoveRange(firstIndex, indicesToDelete);
     }
 
     public static bool ChangeItemType(Item item, int newItemID)

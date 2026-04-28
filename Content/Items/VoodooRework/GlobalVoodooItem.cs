@@ -3,7 +3,6 @@ using Relogiced.Other;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
-using Terraria.UI;
 
 namespace Relogiced.Content.Items.VoodooRework;
 
@@ -57,19 +56,6 @@ public class GlobalVoodooItem : GlobalItem
 
     public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
     {
-        for (int i = 0; i < tooltips.Count; i++)
-        {
-            TooltipLine line = tooltips[i];
-            if (line.Name == "Tooltip0" && line.Mod == "Terraria")
-            {
-                line.Text = ItemTooltip.FromLocalization(Mod.GetLocalization("Items.VoodooActiveTip")).GetLine(0);
-                ItemTooltip t = ItemTooltip.FromLocalization(Mod.GetLocalization("Items.VoodooActiveTip"));
-                for (int j = 1; j < t.Lines; j++)
-                {
-                    tooltips.Insert(i + j, new TooltipLine(Relogiced.Instance, "Tooltip" + j, t.GetLine(j)));
-                }
-                break;
-            }
-        }
+        RelogicedUtil.ReplaceTooltip(tooltips, "Items.VoodooActiveTip");
     }
 }

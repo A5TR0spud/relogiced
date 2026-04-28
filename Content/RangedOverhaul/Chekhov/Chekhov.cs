@@ -1,9 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Relogiced.Other;
 using Terraria;
-using Terraria.Enums;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
@@ -20,14 +21,22 @@ public class Chekhov : ModItem
     public override void SetDefaults()
     {
         Item.rare = ItemRarityID.LightRed;
-        Item.damage = 1000;
+        Item.damage = 1860;
         Item.crit = 13; //13 + 4 = 17 ~ 16.66667 == 1/6
         Item.DamageType = DamageClass.Ranged;
         Item.useAmmo = AmmoID.Bullet;
         Item.shootSpeed = 10;
         Item.knockBack = 8;
         Item.useTime = 30;
-        Item.value = Item.sellPrice(gold: 2, silver: 50);
+        Item.value = Item.buyPrice(gold: 20);
+        HasBeenNotified = Main.hardMode;
+    }
+
+    public override void ModifyTooltips(List<TooltipLine> tooltips)
+    {
+        if (!Main.hardMode)
+            return;
+        RelogicedUtil.ReplaceTooltip(tooltips, "Items.Chekhov.TooltipActive");
     }
 
     public override bool ReforgePrice(ref int reforgePrice, ref bool canApplyDiscount)
@@ -46,12 +55,50 @@ public class Chekhov : ModItem
         return false;
     }
 
+    internal bool HasBeenNotified = false;
+
+    public override void NetSend(BinaryWriter writer)
+    {
+        writer.Write(HasBeenNotified);
+    }
+
+    public override void NetReceive(BinaryReader reader)
+    {
+        HasBeenNotified = reader.ReadBoolean();
+    }
+
+    private const string NOTIFIED_KEY = "Relogiced/Chekhov:_hasBeenNotified";
+
+    public override void SaveData(TagCompound tag)
+    {
+        if (HasBeenNotified)
+            tag.Add(NOTIFIED_KEY, HasBeenNotified);
+    }
+
+    public override void LoadData(TagCompound tag)
+    {
+        if (tag.ContainsKey(NOTIFIED_KEY))
+            HasBeenNotified = tag.GetBool(NOTIFIED_KEY);
+        else
+            HasBeenNotified = Main.hardMode;
+    }
+
+    public override bool PreDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor,
+        Vector2 origin, float scale)
+    {
+        if (Main.hardMode && !HasBeenNotified)
+        {
+            Item.newAndShiny = true;
+            HasBeenNotified = true;
+        }
+        return true;
+    }
+
     public override void UpdateInventory(Player player)
     {
         ChekhovPlayer plr = player.GetModPlayer<ChekhovPlayer>();
-        if (!plr.HasChekhov)
+        if (plr.FirstChekhov == null)
         {
-            plr.HasChekhov = true;
             plr.FirstChekhov = Item;
         }
     }
@@ -66,9 +113,7 @@ public class ChekhovShopHelper : GlobalNPC
 
     public override void SetupTravelShop(int[] shop, ref int nextSlot)
     {
-        if (nextSlot >= shop.Length)
-            return;
-        if (Main.GetMoonPhase() == MoonPhase.Full && !Main.hardMode && Main.rand.NextBool(400))
+        if (Main.rand.NextBool(Main.hardMode ? 1000 : 400))
         {
             shop[nextSlot++] = ModContent.ItemType<Chekhov>();
         }
@@ -78,9 +123,19 @@ public class ChekhovShopHelper : GlobalNPC
     {
         if (shop.NpcType == NPCID.ArmsDealer && shop.Name == "Shop")
         {
-            shop.Add(ModContent.ItemType<Chekhov>(), Condition.DownedEowOrBoc, Condition.DownedSkeletron, Condition.MoonPhaseNew, Condition.PreHardmode);
-            shop.Add(ModContent.ItemType<Chekhov>(), Condition.DownedEowOrBoc, Condition.DownedSkeletron, Condition.MoonPhaseFull, Condition.PreHardmode);
-            shop.Add(ModContent.ItemType<Chekhov>(), Condition.DownedEowOrBoc, Condition.DownedSkeletron, Condition.EclipseOrBloodMoon, Condition.Hardmode);
+            shop.Add(new Item(ModContent.ItemType<Chekhov>()) { shopCustomPrice = Item.buyPrice(gold: 30)},
+                Condition.NotDownedQueenBee, Condition.NotDownedEowOrBoc, Condition.NotDownedGoblinArmy,
+                Condition.LanternNight, Condition.PreHardmode);
+            shop.Add(new Item(ModContent.ItemType<Chekhov>()) { shopCustomPrice = Item.buyPrice(gold: 50)},
+                Condition.DownedEowOrBoc, Condition.DownedSkeletron, Condition.TimeNight, Condition.MoonPhaseNew,
+                Condition.PreHardmode);
+            shop.Add(new Item(ModContent.ItemType<Chekhov>()) { shopCustomPrice = Item.buyPrice(gold: 50)},
+                Condition.DownedEowOrBoc, Condition.DownedSkeletron, Condition.TimeNight, Condition.MoonPhaseFull,
+                Condition.PreHardmode);
+            shop.Add(new Item(ModContent.ItemType<Chekhov>()) { shopCustomPrice = Item.buyPrice(platinum: 1, gold: 50)},
+                Condition.DownedEowOrBoc, Condition.DownedSkeletron, Condition.BloodMoon, Condition.Hardmode);
+            shop.Add(new Item(ModContent.ItemType<Chekhov>()) { shopCustomPrice = Item.buyPrice(platinum: 1, gold: 50)},
+                Condition.DownedEowOrBoc, Condition.DownedSkeletron, Condition.Eclipse, Condition.Hardmode);
         }
     }
 }
@@ -92,11 +147,10 @@ public class ChekhovPlayer : ModPlayer
         return Relogiced.ConfigRangedOverhaul.Chekhov;
     }
 
-    public bool HasChekhov = false;
     public int ChekhovGunCounter = 0;
-    private const string COUNTER_KEY = "ChekhovGunCounter";
+    private const string COUNTER_KEY = "Relogiced/ChekhovPlayer:ChekhovGunCounter";
     public Item FirstChekhov = null;
-    private const int INTERVALS_PER_SHOT = 45 * 30 * 60 / 5; //leading term is approximate time to trigger, in minutes
+    private const int INTERVALS_PER_SHOT = 60 * 30 * 60 / 5; //leading term is approximate time to trigger, in minutes
 
     public override void SaveData(TagCompound tag)
     {
@@ -112,21 +166,28 @@ public class ChekhovPlayer : ModPlayer
 
     public override void ResetEffects()
     {
-        HasChekhov = false;
+        FirstChekhov = null;
     }
 
     public override void PostUpdate()
     {
         if (Player.whoAmI != Main.myPlayer)
             return;
-        if (!HasChekhov)
+        if (FirstChekhov == null || FirstChekhov.IsAir)
             return;
+        if (Main.hardMode && FirstChekhov.ModItem is Chekhov chk && !chk.HasBeenNotified)
+        {
+            FirstChekhov.newAndShiny = true;
+            SoundEngine.PlaySound(SoundID.Grab);
+            chk.HasBeenNotified = true;
+        }
         if (!Main.hardMode)
             return;
         if (Player.miscCounter % 300 != 0) //5 seconds
             return;
-        int consequent = 2 * INTERVALS_PER_SHOT - ChekhovGunCounter;
-        if (ChekhovGunCounter > 0 && (consequent < 1 || Main.rand.NextBool(consequent)))
+        float threshold = 0.6321f * ChekhovGunCounter / (float)INTERVALS_PER_SHOT;
+        threshold *= threshold;
+        if (ChekhovGunCounter > 0 && Main.rand.Next(INTERVALS_PER_SHOT) < (int)(threshold * INTERVALS_PER_SHOT))
         {
             if (TryChekhov())
             {

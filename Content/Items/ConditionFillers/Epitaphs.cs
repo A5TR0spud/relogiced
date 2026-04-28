@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Humanizer;
-using Microsoft.Xna.Framework;
-using Mono.Cecil.Cil;
-using MonoMod.Cil;
 using Relogiced.Other;
 using Terraria;
-using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
@@ -243,13 +240,9 @@ public class Epitaph : EpitaphBase
 {
     public override void ModifyTooltips(List<TooltipLine> tooltips)
     {
-        foreach (TooltipLine line in tooltips)
+        foreach (TooltipLine line in tooltips.Where(line => line.FullName.StartsWith("Terraria/Tooltip")))
         {
-            if (line.FullName == "Terraria/Tooltip2")
-            {
-                line.Text = line.Text.FormatWith(GetInscription());
-                break;
-            }
+            line.Text = line.Text.FormatWith(GetInscription());
         }
     }
 

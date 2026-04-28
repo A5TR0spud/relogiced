@@ -1,6 +1,4 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Relogiced.Content.MagicOverhaul.ManaRewrite;
 using Relogiced.Other;
 using Terraria;
 using Terraria.DataStructures;
