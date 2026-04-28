@@ -187,7 +187,7 @@ public class ChekhovPlayer : ModPlayer
             return;
         float threshold = 0.6321f * ChekhovGunCounter / (float)INTERVALS_PER_SHOT;
         threshold *= threshold;
-        if (ChekhovGunCounter > 0 && Main.rand.Next(INTERVALS_PER_SHOT) < (int)(threshold * INTERVALS_PER_SHOT))
+        if (ChekhovGunCounter > 0 && Main.rand.NextFloat() < threshold)
         {
             if (TryChekhov())
             {
