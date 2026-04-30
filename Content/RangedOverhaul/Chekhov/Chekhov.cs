@@ -132,9 +132,9 @@ public class ChekhovShopHelper : GlobalNPC
             shop.Add(new Item(ModContent.ItemType<Chekhov>()) { shopCustomPrice = Item.buyPrice(gold: 50)},
                 Condition.DownedEowOrBoc, Condition.DownedSkeletron, Condition.TimeNight, Condition.MoonPhaseFull,
                 Condition.PreHardmode);
-            shop.Add(new Item(ModContent.ItemType<Chekhov>()) { shopCustomPrice = Item.buyPrice(platinum: 1, gold: 50)},
+            shop.Add(new Item(ModContent.ItemType<Chekhov>()) { shopCustomPrice = Item.buyPrice(platinum: 2)},
                 Condition.DownedEowOrBoc, Condition.DownedSkeletron, Condition.BloodMoon, Condition.Hardmode);
-            shop.Add(new Item(ModContent.ItemType<Chekhov>()) { shopCustomPrice = Item.buyPrice(platinum: 1, gold: 50)},
+            shop.Add(new Item(ModContent.ItemType<Chekhov>()) { shopCustomPrice = Item.buyPrice(platinum: 2)},
                 Condition.DownedEowOrBoc, Condition.DownedSkeletron, Condition.Eclipse, Condition.Hardmode);
         }
     }
@@ -196,6 +196,8 @@ public class ChekhovPlayer : ModPlayer
             else
             {
                 ChekhovGunCounter -= INTERVALS_PER_SHOT / 2;
+                if (ChekhovGunCounter < 0)
+                    ChekhovGunCounter /= 2;
             }
         }
         ChekhovGunCounter += (int)(30 * 30f / FirstChekhov.useTime * Player.GetWeaponAttackSpeed(FirstChekhov));
@@ -203,7 +205,7 @@ public class ChekhovPlayer : ModPlayer
 
     private bool TryChekhov()
     {
-        NPC nearest = PlotDevice.GetChekhovTarget(Player.Center, Player);
+        NPC nearest = PlotDevice.GetChekhovTarget(Player.Center, this);
 
         if (nearest != null && Player.PickAmmo(FirstChekhov,
                 out int projToCopyExtraUpdatesOf,

@@ -89,6 +89,7 @@ public class PlotDevice : ModProjectile
             Projectile.extraUpdates += proj.extraUpdates;
             Projectile.maxPenetrate = proj.maxPenetrate;
             Projectile.penetrate = proj.penetrate;
+            Projectile.ArmorPenetration += proj.ArmorPenetration;
         }
     }
 
@@ -109,17 +110,29 @@ public class PlotDevice : ModProjectile
     public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
     {
         HitFX(target.Center, (target.Center - Origin).SafeNormalize(Vector2.Zero));
-        Projectile.damage = (int)(Projectile.damage * 0.33f) + 1;
-        Projectile.knockBack *= 0.5f;
-        if (Projectile.damage <= 2)
+        if (Projectile.penetrate == 1)
         {
             Projectile.Kill();
             return;
         }
+        int oldDamage = Projectile.damage;
+        Projectile.damage = (int)(Projectile.damage * 0.33f) + 1;
+        if (Projectile.damage >= oldDamage)
+        {
+            Projectile.Kill();
+            return;
+        }
+        Projectile.knockBack *= 0.5f;
         Vector2 searchOrigin = Projectile.owner >= 0 && Projectile.owner < Main.player.Length
             ? Main.player[Projectile.owner].Center
             : Origin;
-        Target = GetChekhovTarget(searchOrigin, plotDevice: Projectile)?.whoAmI ?? -1;
+        int newTarget = GetChekhovTarget(searchOrigin, plotDevice: this)?.whoAmI ?? -1;
+        if (newTarget < 0 || newTarget >= Main.npc.Length || newTarget == Target)
+        {
+            Projectile.Kill();
+            return;
+        }
+        Target = newTarget;
         Origin = Projectile.Center;
         Delta = 0;
         Projectile.extraUpdates++;
@@ -276,34 +289,59 @@ public class PlotDevice : ModProjectile
     }
     
     
-    public static NPC GetChekhovTarget(Vector2 position, Player owner = null, Projectile plotDevice = null)
+    public static NPC GetChekhovTarget(Vector2 position, ChekhovPlayer owner = null, PlotDevice plotDevice = null)
     {
         NPC nearest = null;
         float cost = 0;
-        int damage = owner?.GetWeaponDamage(owner.GetModPlayer<ChekhovPlayer>().FirstChekhov) ?? plotDevice?.damage ?? 0;
+        bool makeCollisionCheck = owner != null || plotDevice != null;
+        Item firstChekhov = owner?.FirstChekhov;
+        int damage = plotDevice?.Projectile.damage ?? owner?.Player.GetWeaponDamage(firstChekhov) ?? 0;
+        DamageClass damageType =
+            plotDevice?.Projectile.DamageType ?? firstChekhov?.DamageType ?? DamageClass.Ranged;
+        float armorPen = plotDevice?.Projectile.ArmorPenetration ?? firstChekhov?.ArmorPenetration ?? 0;
         foreach (NPC npc in Main.ActiveNPCs)
         {
             if (!npc.CanBeChasedBy(plotDevice))
                 continue;
             if (npc.life <= 0)
                 continue;
-            if (plotDevice != null && plotDevice.localNPCImmunity[npc.whoAmI] != 0)
+            if (plotDevice != null && plotDevice.Projectile.localNPCImmunity[npc.whoAmI] != 0)
                 continue;
             float newCost = npc.Distance(position);
-            if (!Collision.CanHit((Entity)owner ?? (Entity)plotDevice, npc))
-                newCost *= 2;
-            if (newCost > 16 * 100) //100 tile range (40 tiles off-screen horizontally)
+            if (makeCollisionCheck && !Collision.CanHit((Entity)plotDevice?.Projectile ?? (Entity)owner.Player, npc))
+            {
+                newCost = 2 * newCost + 16;
+            }
+            if (newCost > 16 * 100) //100 tile maximum range (40 tiles off-screen horizontally)
                 continue;
-            newCost -= 16f * 3f * (float)Math.Log10(npc.life);
+            newCost -= 16f * 3f * (float)Math.Log10((npc.life + npc.lifeMax) * 0.5f);
             //zombie (40HP): 4.8 tiles closer
             //mimic (500HP): 8.1 tiles closer
             //wyvern (4000HP): 10.8 tiles closer
             //master destroyer (153000HP): 15.6 tiles closer
             if (npc.boss)
-                newCost -= 16 * 10; //treat it 10 tiles closer if it's a boss
-            if (npc.life < damage)
-                newCost += 16 * 10; //if damage would be wasted, be harsh
+                newCost -= 16 * 12; //treat it 12 tiles closer if it's a boss
+            NPC.HitModifiers modifiers = npc.GetIncomingStrikeModifiers(damageType, 0);
+            modifiers.ArmorPenetration += armorPen;
+            if (plotDevice != null)
+                CombinedHooks.ModifyHitNPCWithProj(plotDevice.Projectile, npc, ref modifiers);
+            else if (owner != null)
+                CombinedHooks.ModifyPlayerHitNPCWithItem(owner.Player, firstChekhov, npc, ref modifiers);
+            NPC.HitInfo wouldBeHit = modifiers.ToHitInfo(damage, false, 0);
+            if (!wouldBeHit.InstantKill && (Main.rand.NextBool() ? npc.life : npc.lifeMax) < wouldBeHit.Damage) //if damage would be wasted, be harsh
+            {
+                int wastedDamage = wouldBeHit.Damage - npc.life;
+                newCost += wastedDamage * 0.602150537634f;
+                //2000 wasted damage -> 75.3 tiles further
+                //1860 wasted damage -> 70 tiles further
+                //1000 wasted damage -> 37.6 tiles further
+                //500 wasted damage -> 18.8 tiles further
+            }
+            newCost -= npc.damage;
             newCost += Main.rand.NextFloat(-64f, 64f + float.Epsilon); //where's the fun if there's no gambling?
+            //CombatText.NewText(new Rectangle((int)npc.Top.X, (int)npc.Top.Y, 0, 0), Color.White, (int)(newCost / 16f));
+            if (newCost > 16 * 70) //70 "tile" range (10 tiles off-screen horizontally)
+                continue;
             if (newCost > cost && nearest != null)
                 continue;
             nearest = npc;
