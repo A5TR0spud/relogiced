@@ -264,6 +264,11 @@ Items: {
 			'It only takes one bullet'
 			'''
 	}
+
+	Borealis: {
+		Tooltip: ""
+		DisplayName: Borealis
+	}
 }
 
 Chats: {
@@ -280,6 +285,7 @@ Projectiles: {
 	LostWisp.DisplayName: Will-o'-the-wisp
 	PlotDevice.DisplayName: Plot Device
 	ChekhovVisualizer.DisplayName: Chekhov Indicator
+	RodFromGod.DisplayName: Rod From God
 }
 
 Buffs: {
