@@ -1,11 +1,14 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
+using Relogiced.Other;
 using Terraria;
 using Terraria.Audio;
+using Terraria.Chat;
 using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 
 namespace Relogiced.Content.RangedOverhaul.Borealis;
@@ -17,31 +20,74 @@ public class Borealis : ModItem
         Item.damage = 10000;
         Item.crit = 96;
         Item.DamageType = DamageClass.Ranged;
-        Item.useStyle = ItemUseStyleID.HiddenAnimation;
+        Item.useStyle = -1;
         Item.autoReuse = false;
-        Item.useAnimation = 32;
+        Item.useAnimation = Item.useTime = 16;
         Item.holdStyle = ItemHoldStyleID.HoldRadio;
-        Item.useTime = 32;
         Item.width = 32;
         Item.height = 20;
         Item.noUseGraphic = true;
-        Item.shoot = ModContent.ProjectileType<RodFromGod>();
-        SoundStyle sound = SoundID.Item35;
-        sound = sound.WithPitchOffset(-0.2f);
+        Item.noMelee = true;
+        Item.shoot = ModContent.ProjectileType<BorealisReticle>();
+        SoundStyle sound = SoundID.Mech;
+        sound = sound.WithPitchOffset(-0.4f);
         Item.UseSound = sound;
         Item.shootSpeed = 24f;
-        Item.value = Item.buyPrice(0, 10);
-        Item.rare = ItemRarityID.Orange;
+        Item.value = Item.sellPrice(0, 20);
+        Item.rare = ItemRarityID.Red;
     }
 
-    public override bool CanUseItem(Player player)
+    public readonly long FirePrice = Item.buyPrice(platinum: 1);
+
+    public override void HoldItem(Player player)
     {
-        return true;//BorealisCooldownSystem.BorealisIsOffCooldown;
+        if (!RelogicedUtil.DEBUG_MODE) return;
+        uint cd = BorealisCooldownSystem.BorealisCooldownTimer;
+        if (cd == 0) return;
+        if (cd % 60 != 0) return;
+        int t = (int)(cd / 60);
+        CombatText.NewText(new Rectangle((int)player.Top.X, (int)player.Top.Y, 0, 0),
+            Color.White,
+            t);
+    }
+
+    public override void UpdateInventory(Player player)
+    {
+        if (player.whoAmI == Main.myPlayer && BorealisCooldownSystem.PlayRefreshSoundThisTick)
+        {
+            SoundStyle sound = SoundID.Item35;
+            sound = sound.WithPitchOffset(3f);
+            SoundEngine.PlaySound(sound);
+            sound = SoundID.Item35;
+            sound = sound.WithPitchOffset(-0.5f);
+            SoundEngine.PlaySound(sound);
+            SoundEngine.PlaySound(SoundID.MaxMana);
+            for (int i = 0; i < 5; i++)
+            {
+                int num = Dust.NewDust(player.position, player.width, player.height, 45, 0f, 0f, 255, default(Color), (float)Main.rand.Next(20, 26) * 0.1f);
+                Main.dust[num].noLight = true;
+                Main.dust[num].noGravity = true;
+                Dust obj = Main.dust[num];
+                obj.velocity *= 0.5f;
+            }
+        }
+        BorealisCooldownSystem.PlayRefreshSoundThisTick = false;
+    }
+
+    public override bool CanShoot(Player player)
+    {
+        return player.CanAfford(FirePrice) && BorealisCooldownSystem.IsRodFromGodAvailable() && player.ownedProjectileCounts[ModContent.ProjectileType<BorealisReticle>()] == 0;
+    }
+
+    //TODO: make use animation function??
+    public override void UseAnimation(Player player)
+    {
+        player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Quarter, 0.5f);
     }
 
     public override void ModifyWeaponCrit(Player player, ref float crit)
     {
-        crit = 1;
+        crit = 100;
     }
 
     public override void ModifyShootStats(Player player, ref Vector2 position, ref Vector2 velocity, ref int type, ref int damage,
@@ -51,69 +97,78 @@ public class Borealis : ModItem
         velocity = Vector2.UnitY * velocity.Length();
     }
 
-    /*public override bool Shoot(Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type,
+    public override bool Shoot(Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type,
         int damage, float knockback)
     {
-        if (BorealisCooldownSystem.BorealisIsOnCooldown)
+        if (!player.BuyItem(FirePrice))
             return false;
-        BorealisCooldownSystem.BorealisIsOnCooldown = true;
-        return base.Shoot(player, source, position, velocity, type, damage, knockback);
-    }*/
+        NetworkHelper.Borealis_PutOnCooldown();
+        return true;
+    }
 }
 
 public class BorealisCooldownSystem : ModSystem
 {
-    private static uint _borealisCooldownTimer = 0;
-    public const uint BOREALIS_COOLDOWN = 60 * 90;
-    public static bool BorealisIsOnCooldown
+    internal static uint BorealisCooldownTimer = 0;
+    internal const uint BOREALIS_COOLDOWN = 60 * 90;
+
+    internal static bool BorealisCanBeUsed = Main.netMode != NetmodeID.MultiplayerClient;
+    public static bool PlayRefreshSoundThisTick = false;
+
+    public static bool IsRodFromGodAvailable()
     {
-        get => _borealisCooldownTimer == 0;
-        set
-        {
-            if (value)
-                _borealisCooldownTimer = BOREALIS_COOLDOWN;
-            else
-                _borealisCooldownTimer = 0;
-        }
+        if (Main.netMode != NetmodeID.MultiplayerClient)
+            return BorealisCooldownTimer == 0;
+        return BorealisCanBeUsed;
     }
 
-    private bool needsToSync = false;
-    private uint lastTimer = 0;
-
-    public static bool BorealisIsOffCooldown
+    internal static void SetState(bool usable)
     {
-        get => !BorealisIsOnCooldown;
-        set => BorealisIsOnCooldown = !value;
+        PlayRefreshSoundThisTick = usable;
+        BorealisCanBeUsed = usable;
+        if (!usable)
+            BorealisCooldownTimer = BOREALIS_COOLDOWN;
     }
 
     public override void PreUpdatePlayers()
     {
-        if (_borealisCooldownTimer > 0)
+        //if (Main.netMode == NetmodeID.Server && BorealisCooldownTimer != 0 && BorealisCooldownTimer % 60 == 0)
+        //    ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(((int)(BorealisCooldownTimer / 60)).ToString()), Color.White);
+        if (BorealisCooldownTimer > 0)
         {
-            _borealisCooldownTimer--;
+            BorealisCooldownTimer--;
+            if (BorealisCooldownTimer == 0 && Main.netMode != NetmodeID.MultiplayerClient)
+            {
+                NetworkHelper.Borealis_CoolOff();
+            }
         }
+    }
 
-        if (_borealisCooldownTimer != lastTimer && _borealisCooldownTimer == 0)
-        {
-            needsToSync = true;
-        }
-
-        lastTimer = _borealisCooldownTimer;
+    public override void PostUpdatePlayers()
+    {
+        PlayRefreshSoundThisTick = false;
     }
 }
 
 public class BorealisDrawPlayer : PlayerDrawLayer
 {
     private static Asset<Texture2D> texAsset;
+    private static Asset<Texture2D> texAssetGlow;
 
     public override void SetStaticDefaults()
     {
         texAsset = ModContent.Request<Texture2D>("Relogiced/Content/RangedOverhaul/Borealis/Borealis_Held");
+        texAssetGlow = ModContent.Request<Texture2D>("Relogiced/Content/RangedOverhaul/Borealis/Borealis_Held_Glow");
     }
 
     public override Position GetDefaultPosition()
     {
-        return PlayerDrawLayers.JimsDroneRadio.GetDefaultPosition();
+        return new Multiple()
+        {
+            { new Between(PlayerDrawLayers.JimsDroneRadio, PlayerDrawLayers.Shield), drawinfo => drawinfo.drawPlayer.itemAnimation == 0 },
+            
+            { new Between(PlayerDrawLayers.ProjectileOverArm, PlayerDrawLayers.FrozenOrWebbedDebuff), drawinfo => drawinfo.drawPlayer.itemAnimation != 0 }
+        };
     }
 
     protected override void Draw(ref PlayerDrawSet drawInfo)
@@ -122,16 +177,40 @@ public class BorealisDrawPlayer : PlayerDrawLayer
         {
             Rectangle bodyFrame = drawInfo.drawPlayer.bodyFrame;
             Texture2D value = texAsset.Value;
+            Vector2 pos = new Vector2(
+                              (float)((int)(drawInfo.Position.X - Main.screenPosition.X -
+                                          (float)(drawInfo.drawPlayer.bodyFrame.Width / 2) +
+                                          (float)(drawInfo.drawPlayer.width / 2)) +
+                                      drawInfo.drawPlayer.direction * 2),
+                              (float)(int)(drawInfo.Position.Y - Main.screenPosition.Y +
+                                  (float)drawInfo.drawPlayer.height -
+                                  (float)drawInfo.drawPlayer.bodyFrame.Height + 4f + 14f)) +
+                          drawInfo.drawPlayer.bodyPosition +
+                          new Vector2((float)(drawInfo.drawPlayer.bodyFrame.Width / 2),
+                              (float)(drawInfo.drawPlayer.bodyFrame.Height / 2));
             DrawData item = new DrawData(
                 value,
-                new Vector2((float)((int)(drawInfo.Position.X - Main.screenPosition.X - (float)(drawInfo.drawPlayer.bodyFrame.Width / 2) + (float)(drawInfo.drawPlayer.width / 2)) + drawInfo.drawPlayer.direction * 2),
-                    (float)(int)(drawInfo.Position.Y - Main.screenPosition.Y + (float)drawInfo.drawPlayer.height - (float)drawInfo.drawPlayer.bodyFrame.Height + 4f + 14f)) + drawInfo.drawPlayer.bodyPosition + new Vector2((float)(drawInfo.drawPlayer.bodyFrame.Width / 2),
-                    (float)(drawInfo.drawPlayer.bodyFrame.Height / 2)), bodyFrame, drawInfo.colorArmorLegs, drawInfo.drawPlayer.legRotation,
+                pos,
+                bodyFrame,
+                drawInfo.colorArmorLegs,
+                drawInfo.drawPlayer.legRotation,
                 drawInfo.legVect,
                 1f,
                 drawInfo.playerEffect);
             item.shader = drawInfo.cWaist;
             drawInfo.DrawDataCache.Add(item);
+            value = texAssetGlow.Value;
+            DrawData item2 = new DrawData(
+                value,
+                pos,
+                bodyFrame,
+                Color.White,
+                drawInfo.drawPlayer.legRotation,
+                drawInfo.legVect,
+                1f,
+                drawInfo.playerEffect);
+            item2.shader = drawInfo.cWaist;
+            drawInfo.DrawDataCache.Add(item2);
         }
     }
 }

@@ -3,6 +3,7 @@ using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
+using Relogiced.Other;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
@@ -339,7 +340,8 @@ public class PlotDevice : ModProjectile
             }
             newCost -= npc.damage;
             newCost += Main.rand.NextFloat(-64f, 64f + float.Epsilon); //where's the fun if there's no gambling?
-            //CombatText.NewText(new Rectangle((int)npc.Top.X, (int)npc.Top.Y, 0, 0), Color.White, (int)(newCost / 16f));
+            if (RelogicedUtil.DEBUG_MODE)
+                CombatText.NewText(new Rectangle((int)npc.Top.X, (int)npc.Top.Y, 0, 0), Color.White, (int)(newCost / 16f));
             if (newCost > 16 * 70) //70 "tile" range (10 tiles off-screen horizontally)
                 continue;
             if (newCost > cost && nearest != null)

@@ -55,7 +55,10 @@ Configs: {
 	}
 
 	Client: {
-		Headers.Experiments: Experiments
+		Headers: {
+			Experiments: Experiments
+			Other: Other
+		}
 
 		LightingRework: {
 			Label: Lighting Rework
@@ -74,6 +77,15 @@ Configs: {
 				'''
 				Makes certain lights brighter or dimmer, to compensate for
 				questionable vanilla code regarding luminosity.
+				'''
+		}
+
+		DebugMode: {
+			Label: Debug Mode
+			Tooltip:
+				'''
+				Enables certain visualizations of hidden processes or
+				otherwise useful information.
 				'''
 		}
 	}
@@ -286,6 +298,7 @@ Projectiles: {
 	PlotDevice.DisplayName: Plot Device
 	ChekhovVisualizer.DisplayName: Chekhov Indicator
 	RodFromGod.DisplayName: Rod From God
+	BorealisReticle.DisplayName: Borealis Reticle
 }
 
 Buffs: {

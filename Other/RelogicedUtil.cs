@@ -12,6 +12,7 @@ namespace Relogiced.Other;
 
 public class RelogicedUtil : ModSystem
 {
+    public static bool DEBUG_MODE => Relogiced.ConfigClient.DebugMode;
     public static bool ChangeItemTypeFromRMB(Item item, int newItemID, bool unlockSound = false)
     {
         if (!Main.mouseRightRelease || !ChangeItemType(item, newItemID)) return false;

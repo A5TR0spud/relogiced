@@ -12,4 +12,8 @@ public class Client : ModConfig
     public bool LightingRework;
     [ReloadRequired] [DefaultValue(false)]
     public bool LightingCompensation;
+
+    [Header("Other")]
+    [DefaultValue(false)]
+    public bool DebugMode;
 }

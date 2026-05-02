@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Relogiced")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f995eea937c5703c714d1072da7b4763d963d23c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bade3f30562625855f74e7f1697575b2a66d6a79")]
 [assembly: System.Reflection.AssemblyProductAttribute("Relogiced")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Relogiced")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

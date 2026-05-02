@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Relogiced.Other;
 using Terraria;
 using Terraria.Audio;
+using Terraria.Chat;
 using Terraria.DataStructures;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 
 namespace Relogiced.Content.RangedOverhaul.Borealis;
@@ -31,11 +34,21 @@ public class RodFromGod : ModProjectile
         Projectile.hostile = true;
         Projectile.timeLeft *= 1 + Projectile.extraUpdates;
         Projectile.hide = true;
+        Projectile.netImportant = true;
+        ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral("rod from god defaults"), Color.White);
     }
 
+    //TODO: WHY WONT IT SPAWN IN MP??
     public override void OnSpawn(IEntitySource source)
     {
-        Projectile.position.Y = 1;
+        base.OnSpawn(source);
+        //Projectile.position.Y = Projectile.height;
+        ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral("rod from god spawn"), Color.White);
+    }
+
+    public override void OnKill(int timeLeft)
+    {
+        ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral("rod from god dead. t: " + timeLeft), Color.White);
     }
 
     public override void DrawBehind(int index, List<int> behindNPCsAndTiles, List<int> behindNPCs, List<int> behindProjectiles, List<int> overPlayers,
@@ -100,7 +113,7 @@ public class RodFromGod : ModProjectile
                     collidingTiles += weight;
                     t = DustID.Clentaminator_Red;
                 }
-                if (!Main.rand.NextBool(20))
+                if (!RelogicedUtil.DEBUG_MODE || !Main.rand.NextBool(40))
                     continue;
                 Dust.NewDustPerfect(new Vector2(u, v), t, Vector2.Zero);
             }

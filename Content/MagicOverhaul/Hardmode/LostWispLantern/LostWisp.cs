@@ -275,10 +275,11 @@ public class LostWisp : ModProjectile
             return;
         }
 
-        /*foreach (Point p in _path)
-        {
-            Dust.NewDustPerfect(p.ToWorldCoordinates(), DustID.Clentaminator_Green, Vector2.Zero);
-        }*/
+        if (RelogicedUtil.DEBUG_MODE)
+            foreach (Point p in _path)
+            {
+                Dust.NewDustPerfect(p.ToWorldCoordinates(), DustID.Clentaminator_Green, Vector2.Zero);
+            }
 
         Projectile.tileCollide =
             !Collision.SolidCollision(Projectile.position, Projectile.width, Projectile.height);
