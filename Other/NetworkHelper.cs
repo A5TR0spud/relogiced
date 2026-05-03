@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using Relogiced.Content.RangedOverhaul.Borealis;
+using Relogiced.Content.RangedOverhaul.RodFromGodItem;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -18,12 +18,12 @@ public class NetworkedPlayer : ModPlayer
 public class NetworkHelper : ModSystem
 {
     private const ushort ID_SyncNewPlayer = 0;
-    private const ushort ID_BorealisCooldown = 1;
+    private const ushort ID_RFGCooldown = 1;
 
-    private static ModPacket NewPacket(ushort ID)
+    private static ModPacket NewPacket(ushort id)
     {
         ModPacket packet = Relogiced.Instance.GetPacket();
-        packet.Write(ID);
+        packet.Write(id);
         return packet;
     }
 
@@ -37,37 +37,37 @@ public class NetworkHelper : ModSystem
     private static void Handle_SyncNewPlayer(BinaryReader reader, int senderWhoAmI)
     {
         if (Main.netMode != NetmodeID.Server) return;
-        //sync borealis
-        ModPacket myPacket = NewPacket(ID_BorealisCooldown);
-        myPacket.Write(BorealisCooldownSystem.BorealisCanBeUsed);
+        //sync rods from god
+        ModPacket myPacket = NewPacket(ID_RFGCooldown);
+        myPacket.Write(RodFromGodCooldownSystem.RodFromGodCanBeUsed);
         myPacket.Send(toClient: senderWhoAmI);
     }
 
-    public static void Borealis_PutOnCooldown()
+    public static void RodFromGod_PutOnCooldown()
     {
-        Send_BorealisCooldown(false);
+        Send_RFGCooldown(false);
     }
     
-    public static void Borealis_CoolOff()
+    public static void RodFromGod_CoolOff()
     {
-        Send_BorealisCooldown(true);
+        Send_RFGCooldown(true);
     }
 
-    private static void Send_BorealisCooldown(bool nowUsable, int ignoreClient = -1)
+    private static void Send_RFGCooldown(bool nowUsable, int ignoreClient = -1)
     {
-        BorealisCooldownSystem.SetState(nowUsable);
+        RodFromGodCooldownSystem.SetState(nowUsable);
         if (Main.netMode == NetmodeID.SinglePlayer) return;
-        ModPacket myPacket = NewPacket(ID_BorealisCooldown);
+        ModPacket myPacket = NewPacket(ID_RFGCooldown);
         myPacket.Write(nowUsable);
         myPacket.Send(ignoreClient: ignoreClient);
     }
     
-    private static void Handle_BorealisCooldown(BinaryReader reader, int senderWhoAmI)
+    private static void Handle_RFGCooldown(BinaryReader reader, int senderWhoAmI)
     {
         bool nowUsable = reader.ReadBoolean();
-        BorealisCooldownSystem.SetState(nowUsable);
+        RodFromGodCooldownSystem.SetState(nowUsable);
         if (Main.netMode == NetmodeID.Server)
-            Send_BorealisCooldown(nowUsable, senderWhoAmI);
+            Send_RFGCooldown(nowUsable, senderWhoAmI);
     }
 
     internal static void HandlePacket(BinaryReader reader, int senderWhoAmI)
@@ -78,8 +78,8 @@ public class NetworkHelper : ModSystem
             case ID_SyncNewPlayer:
                 Handle_SyncNewPlayer(reader, senderWhoAmI);
                 break;
-            case ID_BorealisCooldown:
-                Handle_BorealisCooldown(reader, senderWhoAmI);
+            case ID_RFGCooldown:
+                Handle_RFGCooldown(reader, senderWhoAmI);
                 break;
         }
     }

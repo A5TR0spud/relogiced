@@ -10,4 +10,6 @@ public class RangedOverhaul : ModConfig
     [Header("Items")]
     [ReloadRequired] [DefaultValue(true)]
     public bool Chekhov;
+    [ReloadRequired] [DefaultValue(true)]
+    public bool RodFromGodItem;
 }

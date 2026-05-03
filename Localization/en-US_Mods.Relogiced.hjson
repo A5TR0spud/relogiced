@@ -193,6 +193,11 @@ Configs: {
 			Label: Chekhov
 			Tooltip: ""
 		}
+
+		RodFromGodItem: {
+			Label: Rod From God Item
+			Tooltip: ""
+		}
 	}
 }
 
@@ -277,8 +282,8 @@ Items: {
 			'''
 	}
 
-	Borealis: {
-		DisplayName: Borealis
+	RodFromGodItem: {
+		DisplayName: Suspicious Looking Button
 		Tooltip: Summon your very own impending doom!
 		FirePrice: Costs {0} to fire
 		OnCooldown: On cooldown for {0} seconds
@@ -305,7 +310,7 @@ Projectiles: {
 	PlotDevice.DisplayName: Plot Device
 	ChekhovVisualizer.DisplayName: Chekhov Indicator
 	RodFromGod.DisplayName: Rod From God
-	BorealisReticle.DisplayName: Borealis Reticle
+	RFGReticle.DisplayName: Rod From God Reticle
 }
 
 Buffs: {

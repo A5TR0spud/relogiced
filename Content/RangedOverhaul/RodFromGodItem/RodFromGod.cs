@@ -5,13 +5,11 @@ using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using Relogiced.Other;
 using Terraria;
-using Terraria.Chat;
 using Terraria.DataStructures;
 using Terraria.ID;
-using Terraria.Localization;
 using Terraria.ModLoader;
 
-namespace Relogiced.Content.RangedOverhaul.Borealis;
+namespace Relogiced.Content.RangedOverhaul.RodFromGodItem;
 
 public class RodFromGod : ModProjectile
 {

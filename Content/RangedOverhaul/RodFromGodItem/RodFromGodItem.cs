@@ -11,10 +11,19 @@ using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.UI;
 
-namespace Relogiced.Content.RangedOverhaul.Borealis;
+namespace Relogiced.Content.RangedOverhaul.RodFromGodItem;
 
-public class Borealis : ModItem
+public class RodFromGodItem : ModItem
 {
+    internal static Asset<Texture2D> HeldItemAsset;
+    internal static Asset<Texture2D> HeldItemAssetGlow;
+
+    public override void SetStaticDefaults()
+    {
+        HeldItemAsset = ModContent.Request<Texture2D>(Texture + "_Held");
+        HeldItemAssetGlow = ModContent.Request<Texture2D>(Texture + "_Held_Glow");
+    }
+    
     public override void Load()
     {
         On_ItemSlot.Draw_SpriteBatch_ItemArray_int_int_Vector2_Color += On_ItemSlotOnDraw_SpriteBatch_ItemArray_int_int_Vector2_Color;
@@ -32,7 +41,7 @@ public class Borealis : ModItem
         orig(spriteBatch, inv, context, slot, position, lightColor);
         Player player = Main.LocalPlayer;
         Item item = inv[slot];
-        bool canBeUsed = BorealisCooldownSystem.BorealisCanBeUsed;
+        bool canBeUsed = RodFromGodCooldownSystem.RodFromGodCanBeUsed;
         bool canAfford = player.CanAfford(FirePrice);
         if (context == 13 && !item.IsAir && item.type == Type && (!canBeUsed || !canAfford))
         {
@@ -47,8 +56,8 @@ public class Borealis : ModItem
             float strengthOfNo = 0f;
             if (!canBeUsed)
             {
-                strengthOfNo = BorealisCooldownSystem.BorealisCooldownTimer /
-                               (float)BorealisCooldownSystem.BOREALIS_COOLDOWN;
+                strengthOfNo = RodFromGodCooldownSystem.RodFromGodCooldownTimer /
+                               (float)RodFromGodCooldownSystem.ROD_FROM_GOD_COOLDOWN;
             }
             if (!canAfford)
             {
@@ -78,7 +87,7 @@ public class Borealis : ModItem
         Item.noUseGraphic = true;
         Item.noMelee = true;
         Item.knockBack = 15;
-        Item.shoot = ModContent.ProjectileType<BorealisReticle>();
+        Item.shoot = ModContent.ProjectileType<RFGReticle>();
         SoundStyle sound = SoundID.Mech;
         sound = sound.WithPitchOffset(-0.4f);
         sound = sound.WithVolumeScale(0.9f);
@@ -98,7 +107,7 @@ public class Borealis : ModItem
     public override void ModifyTooltips(List<TooltipLine> tooltips)
     {
         RelogicedUtil.AppendTooltip(tooltips,
-            RelogicedUtil.GetPriceTooltip(FirePrice, "Items.Borealis.FirePrice"));
+            RelogicedUtil.GetPriceTooltip(FirePrice, "Items.RodFromGodItem.FirePrice"));
     }
 
     public static readonly long FirePrice = Item.buyPrice(platinum: 1);
@@ -106,7 +115,7 @@ public class Borealis : ModItem
     public override void HoldItem(Player player)
     {
         if (!RelogicedUtil.DEBUG_MODE) return;
-        uint cd = BorealisCooldownSystem.BorealisCooldownTimer;
+        uint cd = RodFromGodCooldownSystem.RodFromGodCooldownTimer;
         if (cd == 0) return;
         if (cd % 60 != 0) return;
         int t = (int)(cd / 60);
@@ -117,7 +126,7 @@ public class Borealis : ModItem
 
     public override void UpdateInventory(Player player)
     {
-        if (player.whoAmI == Main.myPlayer && BorealisCooldownSystem.PlayRefreshSoundThisTick)
+        if (player.whoAmI == Main.myPlayer && RodFromGodCooldownSystem.PlayRefreshSoundThisTick)
         {
             SoundStyle sound = SoundID.Item35;
             sound = sound.WithPitchOffset(5f);
@@ -137,7 +146,7 @@ public class Borealis : ModItem
                 obj.velocity *= 0.5f;
             }
         }
-        BorealisCooldownSystem.PlayRefreshSoundThisTick = false;
+        RodFromGodCooldownSystem.PlayRefreshSoundThisTick = false;
     }
 
     public override void UseStyle(Player player, Rectangle heldItemFrame)
@@ -160,7 +169,7 @@ public class Borealis : ModItem
 
     public override bool CanShoot(Player player)
     {
-        return player.CanAfford(FirePrice) && BorealisCooldownSystem.IsRodFromGodAvailable() && player.ownedProjectileCounts[Item.shoot] == 0;
+        return player.CanAfford(FirePrice) && RodFromGodCooldownSystem.IsRodFromGodAvailable() && player.ownedProjectileCounts[Item.shoot] == 0;
     }
 
     public override void ModifyWeaponCrit(Player player, ref float crit)
@@ -180,7 +189,7 @@ public class Borealis : ModItem
     {
         if (!player.BuyItem(FirePrice))
             return false;
-        NetworkHelper.Borealis_PutOnCooldown();
+        NetworkHelper.RodFromGod_PutOnCooldown();
         
         Projectile.NewProjectile(
             source,
@@ -191,58 +200,56 @@ public class Borealis : ModItem
     }
 }
 
-public class BorealisPlayer : ModPlayer
+public class RodFromGodItemPlayer : ModPlayer
 {
     public override void PostItemCheck()
     {
         Item item = Player.HeldItem;
-        if (Player.cursorItemIconEnabled || !string.IsNullOrEmpty(Player.cursorItemIconText) || item.IsAir || item.type != ModContent.ItemType<Borealis>()) return;
-        bool canAfford = Player.CanAfford(Borealis.FirePrice);
-        bool canUse = BorealisCooldownSystem.BorealisCanBeUsed;
+        if (Player.cursorItemIconEnabled || !string.IsNullOrEmpty(Player.cursorItemIconText) || item.IsAir || item.type != ModContent.ItemType<RodFromGodItem>()) return;
+        bool canAfford = Player.CanAfford(RodFromGodItem.FirePrice);
+        bool canUse = RodFromGodCooldownSystem.RodFromGodCanBeUsed;
         if (canAfford && canUse) return;
         Player.cursorItemIconEnabled = true;
         //Player.cursorItemIconPush = 0;
-        int tMinus = (int)((BorealisCooldownSystem.BorealisCooldownTimer - 1) / 60 + 1);
+        int tMinus = (int)((RodFromGodCooldownSystem.RodFromGodCooldownTimer - 1) / 60 + 1);
         Player.cursorItemIconText = !canAfford
-            ? RelogicedUtil.GetPriceTooltip(Borealis.FirePrice, "Items.Borealis.FirePrice").GetLine(0)
-            : Relogiced.Instance.GetLocalization("Items.Borealis.OnCooldown").WithFormatArgs(tMinus).Value;
-        Player.cursorItemIconID = -1;//ModContent.ItemType<CoolDownIcon>();
+            ? RelogicedUtil.GetPriceTooltip(RodFromGodItem.FirePrice, "Items.RodFromGodItem.FirePrice").GetLine(0)
+            : Relogiced.Instance.GetLocalization("Items.RodFromGodItem.OnCooldown").WithFormatArgs(tMinus).Value;
+        Player.cursorItemIconID = -1;
     }
 }
 
-public class BorealisCooldownSystem : ModSystem
+public class RodFromGodCooldownSystem : ModSystem
 {
-    internal static uint BorealisCooldownTimer = 0;
-    internal const uint BOREALIS_COOLDOWN = 60 * 90;
+    internal static uint RodFromGodCooldownTimer = 0;
+    internal const uint ROD_FROM_GOD_COOLDOWN = 60 * 90;
 
-    internal static bool BorealisCanBeUsed = Main.netMode != NetmodeID.MultiplayerClient;
+    internal static bool RodFromGodCanBeUsed = Main.netMode != NetmodeID.MultiplayerClient;
     public static bool PlayRefreshSoundThisTick = false;
 
     public static bool IsRodFromGodAvailable()
     {
         if (Main.netMode != NetmodeID.MultiplayerClient)
-            return BorealisCooldownTimer == 0;
-        return BorealisCanBeUsed;
+            return RodFromGodCooldownTimer == 0;
+        return RodFromGodCanBeUsed;
     }
 
     internal static void SetState(bool usable)
     {
         PlayRefreshSoundThisTick = usable;
-        BorealisCanBeUsed = usable;
+        RodFromGodCanBeUsed = usable;
         if (!usable)
-            BorealisCooldownTimer = BOREALIS_COOLDOWN;
+            RodFromGodCooldownTimer = ROD_FROM_GOD_COOLDOWN;
     }
 
     public override void PreUpdatePlayers()
     {
-        //if (Main.netMode == NetmodeID.Server && BorealisCooldownTimer != 0 && BorealisCooldownTimer % 60 == 0)
-        //    ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(((int)(BorealisCooldownTimer / 60)).ToString()), Color.White);
-        if (BorealisCooldownTimer > 0)
+        if (RodFromGodCooldownTimer > 0)
         {
-            BorealisCooldownTimer--;
-            if (BorealisCooldownTimer == 0 && Main.netMode != NetmodeID.MultiplayerClient)
+            RodFromGodCooldownTimer--;
+            if (RodFromGodCooldownTimer == 0 && Main.netMode != NetmodeID.MultiplayerClient)
             {
-                NetworkHelper.Borealis_CoolOff();
+                NetworkHelper.RodFromGod_CoolOff();
             }
         }
     }
@@ -253,17 +260,8 @@ public class BorealisCooldownSystem : ModSystem
     }
 }
 
-public class BorealisDrawPlayer : PlayerDrawLayer
+public class RodFromGodItemDrawPlayer : PlayerDrawLayer
 {
-    private static Asset<Texture2D> texAsset;
-    private static Asset<Texture2D> texAssetGlow;
-
-    public override void SetStaticDefaults()
-    {
-        texAsset = ModContent.Request<Texture2D>("Relogiced/Content/RangedOverhaul/Borealis/Borealis_Held");
-        texAssetGlow = ModContent.Request<Texture2D>("Relogiced/Content/RangedOverhaul/Borealis/Borealis_Held_Glow");
-    }
-
     public override Position GetDefaultPosition()
     {
         return new Multiple()
@@ -276,10 +274,10 @@ public class BorealisDrawPlayer : PlayerDrawLayer
 
     protected override void Draw(ref PlayerDrawSet drawInfo)
     {
-        if (drawInfo.drawPlayer.HeldItem.type == ModContent.ItemType<Borealis>())// && drawInfo.drawPlayer.itemAnimation == 0)
+        if (drawInfo.drawPlayer.HeldItem.type == ModContent.ItemType<RodFromGodItem>())
         {
             Rectangle bodyFrame = drawInfo.drawPlayer.bodyFrame;
-            Texture2D value = texAsset.Value;
+            Texture2D value = RodFromGodItem.HeldItemAsset.Value;
             Vector2 pos = new Vector2(
                               (float)((int)(drawInfo.Position.X - Main.screenPosition.X -
                                           (float)(drawInfo.drawPlayer.bodyFrame.Width / 2) +
@@ -302,7 +300,7 @@ public class BorealisDrawPlayer : PlayerDrawLayer
                 drawInfo.playerEffect);
             item.shader = drawInfo.cWaist;
             drawInfo.DrawDataCache.Add(item);
-            value = texAssetGlow.Value;
+            value = RodFromGodItem.HeldItemAssetGlow.Value;
             DrawData item2 = new DrawData(
                 value,
                 pos,

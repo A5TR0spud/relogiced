@@ -5,15 +5,13 @@ using ReLogic.Content;
 using Relogiced.Other;
 using Terraria;
 using Terraria.Audio;
-using Terraria.Chat;
 using Terraria.DataStructures;
 using Terraria.ID;
-using Terraria.Localization;
 using Terraria.ModLoader;
 
-namespace Relogiced.Content.RangedOverhaul.Borealis;
+namespace Relogiced.Content.RangedOverhaul.RodFromGodItem;
 
-public class BorealisNoDupeSystem : ModSystem
+public class RFGNoDupeSystem : ModSystem
 {
     internal static bool HasUpdated = false;
     public override void PreUpdateProjectiles()
@@ -24,7 +22,7 @@ public class BorealisNoDupeSystem : ModSystem
     public static bool GetHasUpdated() => HasUpdated;
 }
 
-public class BorealisReticle : ModProjectile
+public class RFGReticle : ModProjectile
 {
     private static Asset<Texture2D> texAsset;
 
@@ -109,13 +107,13 @@ public class BorealisReticle : ModProjectile
 
     public override bool PreAI()
     {
-        if (BorealisNoDupeSystem.HasUpdated)
+        if (RFGNoDupeSystem.HasUpdated)
         {
             Projectile.timeLeft = -200;
             Projectile.Kill();
             return false;
         }
-        BorealisNoDupeSystem.HasUpdated = true;
+        RFGNoDupeSystem.HasUpdated = true;
         return true;
     }
 
