@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
@@ -15,26 +16,34 @@ namespace Relogiced.Content.RangedOverhaul.Borealis;
 
 public class Borealis : ModItem
 {
+    private const int ITEM_TIME = 16;
     public override void SetDefaults()
     {
-        Item.damage = 10000;
+        Item.damage = 15000;
         Item.crit = 96;
         Item.DamageType = DamageClass.Ranged;
         Item.useStyle = -1;
         Item.autoReuse = false;
-        Item.useAnimation = Item.useTime = 16;
+        Item.useAnimation = Item.useTime = ITEM_TIME;
         Item.holdStyle = ItemHoldStyleID.HoldRadio;
         Item.width = 32;
         Item.height = 20;
         Item.noUseGraphic = true;
         Item.noMelee = true;
-        Item.shoot = ModContent.ProjectileType<BorealisReticle>();
+        Item.knockBack = 15;
+        Item.shoot = ModContent.ProjectileType<RodFromGod>();
         SoundStyle sound = SoundID.Mech;
         sound = sound.WithPitchOffset(-0.4f);
         Item.UseSound = sound;
         Item.shootSpeed = 24f;
         Item.value = Item.sellPrice(0, 20);
         Item.rare = ItemRarityID.Red;
+    }
+
+    public override void ModifyTooltips(List<TooltipLine> tooltips)
+    {
+        RelogicedUtil.AppendTooltip(tooltips,
+            RelogicedUtil.GetPriceTooltip(FirePrice, "Items.Borealis.FirePrice"));
     }
 
     public readonly long FirePrice = Item.buyPrice(platinum: 1);
@@ -74,15 +83,28 @@ public class Borealis : ModItem
         BorealisCooldownSystem.PlayRefreshSoundThisTick = false;
     }
 
-    public override bool CanShoot(Player player)
+    public override void UseStyle(Player player, Rectangle heldItemFrame)
     {
-        return player.CanAfford(FirePrice) && BorealisCooldownSystem.IsRodFromGodAvailable() && player.ownedProjectileCounts[ModContent.ProjectileType<BorealisReticle>()] == 0;
+        //button depressed
+        Player.CompositeArmStretchAmount stretchAmount = Player.CompositeArmStretchAmount.Quarter;
+        float rot = -0.9f;
+        int frame = 11;
+        if (player.itemAnimation > player.itemAnimationMax / 2)
+        {
+            //button pressed
+            stretchAmount = Player.CompositeArmStretchAmount.ThreeQuarters;
+            rot = -0.8f;
+            frame = 12;
+        }
+        player.bodyFrame.Y = 56 * frame;
+        
+        player.SetCompositeArmFront(true, stretchAmount, rot * player.direction);
     }
 
-    //TODO: make use animation function??
-    public override void UseAnimation(Player player)
+    public override bool CanShoot(Player player)
     {
-        player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Quarter, 0.5f);
+        return true;
+        return player.CanAfford(FirePrice) && BorealisCooldownSystem.IsRodFromGodAvailable() && player.ownedProjectileCounts[ModContent.ProjectileType<BorealisReticle>()] == 0;
     }
 
     public override void ModifyWeaponCrit(Player player, ref float crit)
@@ -103,7 +125,12 @@ public class Borealis : ModItem
         if (!player.BuyItem(FirePrice))
             return false;
         NetworkHelper.Borealis_PutOnCooldown();
-        return true;
+        Projectile.NewProjectile(
+            player.GetSource_ItemUse(Item),
+            position, velocity, type, damage, knockback, player.whoAmI,
+            ai0: player.GetWeaponAttackSpeed(Item) * ITEM_TIME / (float)Item.useTime
+        );
+        return false;
     }
 }
 

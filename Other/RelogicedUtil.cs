@@ -22,6 +22,69 @@ public class RelogicedUtil : ModSystem
         return true;
     }
 
+    public static ItemTooltip GetPriceTooltip(long price, string tooltipKey)
+    {
+        string priceText = "";
+		long copper = 0L;
+		long silver = 0L;
+		long gold = 0L;
+		long platinum = 0L;
+		if (price < 1)
+		{
+			price = 1L;
+		}
+		if (price >= 1000000)
+		{
+			copper = price / 1000000;
+			price -= copper * 1000000;
+		}
+		if (price >= 10000)
+		{
+			silver = price / 10000;
+			price -= silver * 10000;
+		}
+		if (price >= 100)
+		{
+			gold = price / 100;
+			price -= gold * 100;
+		}
+		if (price >= 1)
+		{
+			platinum = price;
+		}
+		if (copper > 0)
+		{
+			priceText = priceText + copper + " " + Lang.inter[15].Value + " ";
+		}
+		if (silver > 0)
+		{
+			priceText = priceText + silver + " " + Lang.inter[16].Value + " ";
+		}
+		if (gold > 0)
+		{
+			priceText = priceText + gold + " " + Lang.inter[17].Value + " ";
+		}
+		if (platinum > 0)
+		{
+			priceText = priceText + platinum + " " + Lang.inter[18].Value + " ";
+		}
+
+		return ItemTooltip.FromLocalization(Relogiced.Instance.GetLocalization(tooltipKey).WithFormatArgs(priceText.Trim()));
+    }
+
+    public static void AppendTooltip(List<TooltipLine> tooltips, ItemTooltip toAdd, int insertionIndex = -1)
+    {
+	    for (int i = 0; i < toAdd.Lines; i++)
+	    {
+		    int idx = insertionIndex < 0 || insertionIndex > tooltips.Count ? -1 : insertionIndex++;
+		    TooltipLine line = new TooltipLine(Relogiced.Instance, "Tooltip" + i, toAdd.GetLine(i));
+		    if (idx < 0)
+			    tooltips.Add(line);
+		    else
+			    tooltips.Insert(insertionIndex, line);
+	    }
+    }
+
     public static void ReplaceTooltip(List<TooltipLine> tooltips, string newTooltipKey)
     {
         bool delete = false;

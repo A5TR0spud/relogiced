@@ -35,6 +35,14 @@ public class BorealisReticle : ModProjectile
 
     private const int TIME = 60 * 30;
 
+    public ref float AttackSpeed => ref Projectile.ai[0];
+
+    public int ActualTime
+    {
+        get => (int)Projectile.ai[1];
+        set => Projectile.ai[1] = value;
+    }
+
     public override void SetDefaults()
     {
         Projectile.netImportant = true;
@@ -87,10 +95,10 @@ public class BorealisReticle : ModProjectile
             Projectile.NewProjectile(
                 Projectile.GetSource_Death(),
                 Projectile.Center,
-                Vector2.Zero,//Vector2.UnitY * Projectile.velocity.Length(),
+                Vector2.UnitY * Projectile.velocity.Length(),
                 ModContent.ProjectileType<RodFromGod>(),
-                0,//Projectile.damage,
-                0,//Projectile.knockBack,
+                Projectile.damage,
+                Projectile.knockBack,
                 Owner: Projectile.owner
             );
         }
@@ -118,6 +126,11 @@ public class BorealisReticle : ModProjectile
             sound = SoundID.Item35;
             sound = sound.WithPitchOffset(-0.5f);
             SoundEngine.PlaySound(sound);
+            if (AttackSpeed != 0)
+            {
+                ActualTime = (int)(Projectile.timeLeft / AttackSpeed);
+                Projectile.timeLeft = ActualTime;
+            }
         }
 
         if (RelogicedUtil.DEBUG_MODE && Projectile.timeLeft % 60 == 0)
@@ -146,29 +159,29 @@ public class BorealisReticle : ModProjectile
         dust.noGravity = true;
         dust.noLightEmittence = true;
 
-        float delta = 1f - Projectile.timeLeft / (float)TIME;
-        Projectile.rotation += 0.01f + 0.04f * delta * delta;
+        float delta = 1f - Projectile.timeLeft / (float)ActualTime;
+        Projectile.rotation += AttackSpeed * AttackSpeed * (0.01f + 0.04f * delta * delta);
 
         Projectile.localAI[0]++;
     }
 
     public override bool PreDraw(ref Color lightColor)
     {
-        if (Projectile.timeLeft > TIME)
+        if (Projectile.timeLeft > ActualTime)
             return false;
         Color alpha = GetAlpha(lightColor).GetValueOrDefault(lightColor);
         const int MAX_COUNT = 12;
-        int count = Math.Min((MAX_COUNT + 1) * Projectile.timeLeft / TIME, MAX_COUNT);
-        float fadeOut = (MAX_COUNT + 1) * Projectile.timeLeft / (float)TIME - count;
+        int count = Math.Min((MAX_COUNT + 1) * Projectile.timeLeft / ActualTime, MAX_COUNT);
+        float fadeOut = (MAX_COUNT + 1) * Projectile.timeLeft / (float)ActualTime - count;
         SpriteEffects spriteEffects = Projectile.direction < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
         for (int i = 0; i < count; i++)
         {
             //used to stagger the effect
-            //works because 5 is a number which shares no factors with 12. 7 or 11 could also be used.
+            //works because 5 is a number which shares no factors with 12 and is close to its half. 7 could also be used.
             int fakeI = i * 5 % MAX_COUNT;
             float iDelta = count == 1 ? 0 : fakeI / (float)MAX_COUNT;
             float dir = Projectile.rotation - MathHelper.PiOver2 - MathHelper.TwoPi * iDelta;
-            float dist = 38;
+            float dist = 0;
             Color alf = alpha;
             if (fadeOut < 0.5f && i == count - 1)
             {

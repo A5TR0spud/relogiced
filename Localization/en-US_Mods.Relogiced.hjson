@@ -278,8 +278,9 @@ Items: {
 	}
 
 	Borealis: {
-		Tooltip: ""
 		DisplayName: Borealis
+		Tooltip: Summon your very own impending doom!
+		FirePrice: Costs {0} to fire
 	}
 }
 
