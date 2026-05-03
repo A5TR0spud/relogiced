@@ -81,10 +81,18 @@ public class Borealis : ModItem
         Item.shoot = ModContent.ProjectileType<BorealisReticle>();
         SoundStyle sound = SoundID.Mech;
         sound = sound.WithPitchOffset(-0.4f);
+        sound = sound.WithVolumeScale(0.9f);
         Item.UseSound = sound;
         Item.shootSpeed = 24f;
         Item.value = Item.sellPrice(0, 20);
         Item.rare = ItemRarityID.Red;
+    }
+
+    public override void UseAnimation(Player player)
+    {
+        SoundStyle sound = SoundID.Item108;
+        sound = sound.WithPitchOffset(1.5f).WithVolumeScale(0.15f);
+        SoundEngine.PlaySound(sound, player.whoAmI == Main.myPlayer ? null : player.Center);
     }
 
     public override void ModifyTooltips(List<TooltipLine> tooltips)
@@ -112,12 +120,14 @@ public class Borealis : ModItem
         if (player.whoAmI == Main.myPlayer && BorealisCooldownSystem.PlayRefreshSoundThisTick)
         {
             SoundStyle sound = SoundID.Item35;
-            sound = sound.WithPitchOffset(3f);
+            sound = sound.WithPitchOffset(5f);
             SoundEngine.PlaySound(sound);
-            sound = SoundID.Item35;
+            sound = SoundID.Unlock;
+            sound = sound.WithPitchOffset(0.5f);
+            SoundEngine.PlaySound(sound);
+            sound = SoundID.MaxMana;
             sound = sound.WithPitchOffset(-0.5f);
             SoundEngine.PlaySound(sound);
-            SoundEngine.PlaySound(SoundID.MaxMana);
             for (int i = 0; i < 5; i++)
             {
                 int num = Dust.NewDust(player.position, player.width, player.height, DustID.ManaRegeneration, 0f, 0f, 255, default(Color), (float)Main.rand.Next(20, 26) * 0.1f);

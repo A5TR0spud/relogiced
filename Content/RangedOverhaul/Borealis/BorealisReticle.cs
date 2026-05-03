@@ -126,10 +126,16 @@ public class BorealisReticle : ModProjectile
             if (Projectile.owner == Main.myPlayer)
             {
                 SoundStyle sound = SoundID.Item35;
-                sound = sound.WithPitchOffset(3f);
+                sound = sound.WithPitchOffset(1.8f);
+                sound = sound.WithVolumeScale(0.6f);
                 SoundEngine.PlaySound(sound);
-                sound = SoundID.Item35;
-                sound = sound.WithPitchOffset(-0.5f);
+                sound = SoundID.Item26;
+                sound = sound.WithPitchOffset(2f);
+                sound = sound.WithVolumeScale(0.7f);
+                SoundEngine.PlaySound(sound);
+                sound = SoundID.Item132;
+                sound = sound.WithPitchOffset(3.8f);
+                sound = sound.WithVolumeScale(0.2f);
                 SoundEngine.PlaySound(sound);
             }
             if (AttackSpeed != 0)
