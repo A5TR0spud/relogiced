@@ -5,7 +5,6 @@ using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using Relogiced.Other;
 using Terraria;
-using Terraria.Audio;
 using Terraria.Chat;
 using Terraria.DataStructures;
 using Terraria.ID;
@@ -13,54 +12,6 @@ using Terraria.Localization;
 using Terraria.ModLoader;
 
 namespace Relogiced.Content.RangedOverhaul.Borealis;
-/*
-public class RodFromGodShaderSystem : ModSystem
-{
-    public override void PostUpdateTime()
-    {
-        if (Main.netMode == NetmodeID.Server) return;
-        if (RelogicedUtil.DEBUG_MODE) return;
-        bool foundRodFromGod = false;
-        bool foundReticle = false;
-        int reticleTimeLeft = 0;
-        int reticleMaxTime = 0;
-        foreach (Projectile proj in Main.ActiveProjectiles)
-        {
-            if (proj.type != ModContent.ProjectileType<RodFromGod>() && proj.type != ModContent.ProjectileType<BorealisReticle>())
-                continue;
-            if (Main.LocalPlayer.Distance(proj.Center) > 60 * 16) continue;
-            if (proj.type == ModContent.ProjectileType<RodFromGod>() && proj.velocity == Vector2.Zero)
-            {
-                foundRodFromGod = true;
-                break;
-            }
-            if (proj.type == ModContent.ProjectileType<BorealisReticle>())
-            {
-                foundReticle = true;
-                reticleMaxTime = (int)proj.ai[1];
-                reticleTimeLeft = proj.timeLeft;
-            }
-        }
-        if (foundRodFromGod)
-        {
-            Main.LocalPlayer.moonLordMonolithShader = true;
-            return;
-        }
-
-        if (!foundReticle || reticleMaxTime <= 0 || reticleTimeLeft <= 0 || NPC.MoonLordCountdown != 0) return;
-        
-        float delta = reticleTimeLeft / (float)reticleMaxTime;
-        float fadeIn = Math.Min(1f, 30 * (1f - delta));
-        float num5 = MathHelper.Clamp((float)Math.Sin((float)reticleTimeLeft / 60f * 0.5f) * 2f, 0f, 1f);
-        num5 *= 0.75f - 0.5f * delta;
-        if (!Terraria.Graphics.Effects.Filters.Scene["MoonLordShake"].IsActive())
-        {
-            Terraria.Graphics.Effects.Filters.Scene.Activate("MoonLordShake", Main.LocalPlayer.position);
-        }
-        Terraria.Graphics.Effects.Filters.Scene["MoonLordShake"].GetShader().UseIntensity(num5 * fadeIn);
-    }
-}
-*/
 
 public class RodFromGod : ModProjectile
 {
@@ -75,9 +26,11 @@ public class RodFromGod : ModProjectile
     public override void SetStaticDefaults()
     {
         ProjectileID.Sets.CanHitPastShimmer[Type] = true;
-        texAsset = ModContent.Request<Texture2D>(Texture);
         ProjectileID.Sets.TrailingMode[Type] = 0;
         ProjectileID.Sets.TrailCacheLength[Type] = 19;
+        ProjectileID.Sets.NeedsUUID[Type] = true;
+        ProjectileID.Sets.DontAttachHideToAlpha[Type] = true;
+        texAsset = ModContent.Request<Texture2D>(Texture);
     }
 
     public override void SetDefaults()
@@ -93,23 +46,15 @@ public class RodFromGod : ModProjectile
         Projectile.DamageType = DamageClass.Ranged;
         Projectile.friendly = true;
         Projectile.hostile = true;
-        Projectile.timeLeft *= 1 + Projectile.extraUpdates;
+        Projectile.timeLeft = 60 * 60 * (1 + Projectile.extraUpdates);
         Projectile.hide = true;
         Projectile.netImportant = true;
-        ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral("rod from god defaults"), Color.White);
     }
 
-    //TODO: WHY WONT IT SPAWN IN MP??
     public override void OnSpawn(IEntitySource source)
     {
         HighestSpeed = Speed;
         Projectile.position.Y = 1;
-        ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral("rod from god spawn"), Color.White);
-    }
-
-    public override void OnKill(int timeLeft)
-    {
-        ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral("rod from god dead. t: " + timeLeft), Color.White);
     }
 
     public override void DrawBehind(int index, List<int> behindNPCsAndTiles, List<int> behindNPCs, List<int> behindProjectiles, List<int> overPlayers,
@@ -136,7 +81,6 @@ public class RodFromGod : ModProjectile
         modifiers.Knockback *= SpeedScalar * distScalar;
         modifiers.HitDirectionOverride = Math.Sign(target.Center.X - Projectile.Center.X);
     }
-    
 
     private const float STOPPING_SPEED = 0.3f;
     private const int IGNORE_TILES = 4;
@@ -145,6 +89,12 @@ public class RodFromGod : ModProjectile
     public override bool? CanDamage()
     {
         return !FadingOut && !TooSlow;
+    }
+
+    public override void ModifyDamageHitbox(ref Rectangle hitbox)
+    {
+        int fireball = (int)(16 * 8 * SpeedScalar);
+        hitbox.Inflate(fireball, fireball / 4);
     }
 
     public float olderVelocity = 0;
@@ -160,7 +110,7 @@ public class RodFromGod : ModProjectile
                 Projectile.width,
                 Projectile.height,
                 DustID.LunarOre,
-                newColor: Color.DarkSlateGray).velocity *= 0.1f;
+                newColor: new Color(79, 79, 79)).velocity *= 0.1f;
         }
         
         Projectile.velocity *= 0.998f;
@@ -248,12 +198,6 @@ public class RodFromGod : ModProjectile
         }
     }
 
-    public override void ModifyDamageHitbox(ref Rectangle hitbox)
-    {
-        int fireball = (int)(16 * 8 * SpeedScalar);
-        hitbox.Inflate(fireball, fireball / 4);
-    }
-
     public override Color? GetAlpha(Color lightColor)
     {
         return Color.White * Projectile.Opacity;
@@ -294,9 +238,5 @@ public class RodFromGod : ModProjectile
             spriteEffects
         );
         return false;
-    }
-
-    public override void PostDraw(Color lightColor)
-    {
     }
 }

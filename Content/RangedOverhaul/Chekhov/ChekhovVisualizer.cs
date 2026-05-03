@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using Terraria;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace Relogiced.Content.RangedOverhaul.Chekhov;
@@ -16,6 +17,7 @@ public class ChekhovVisualizer : ModProjectile
     public override void SetStaticDefaults()
     {
         texAsset = ModContent.Request<Texture2D>(Texture);
+        ProjectileID.Sets.DontAttachHideToAlpha[Type] = true;
     }
 
     public override void SetDefaults()

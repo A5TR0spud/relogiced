@@ -5,17 +5,64 @@ using ReLogic.Content;
 using Relogiced.Other;
 using Terraria;
 using Terraria.Audio;
-using Terraria.Chat;
 using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.ID;
-using Terraria.Localization;
 using Terraria.ModLoader;
+using Terraria.UI;
 
 namespace Relogiced.Content.RangedOverhaul.Borealis;
 
 public class Borealis : ModItem
 {
+    public override void Load()
+    {
+        On_ItemSlot.Draw_SpriteBatch_ItemArray_int_int_Vector2_Color += On_ItemSlotOnDraw_SpriteBatch_ItemArray_int_int_Vector2_Color;
+    }
+
+    public override void Unload()
+    {
+        On_ItemSlot.Draw_SpriteBatch_ItemArray_int_int_Vector2_Color -= On_ItemSlotOnDraw_SpriteBatch_ItemArray_int_int_Vector2_Color;
+    }
+
+    private void On_ItemSlotOnDraw_SpriteBatch_ItemArray_int_int_Vector2_Color(
+        On_ItemSlot.orig_Draw_SpriteBatch_ItemArray_int_int_Vector2_Color orig,
+        SpriteBatch spriteBatch, Item[] inv, int context, int slot, Vector2 position, Color lightColor)
+    {
+        orig(spriteBatch, inv, context, slot, position, lightColor);
+        Player player = Main.LocalPlayer;
+        Item item = inv[slot];
+        bool canBeUsed = BorealisCooldownSystem.BorealisCanBeUsed;
+        bool canAfford = player.CanAfford(FirePrice);
+        if (context == 13 && !item.IsAir && item.type == Type && (!canBeUsed || !canAfford))
+        {
+            Texture2D value = TextureAssets.InventoryBack.Value;
+            float inventoryScale = Main.inventoryScale;
+            Color color = Color.White;
+            if (lightColor != Color.Transparent)
+            {
+                color = lightColor;
+            }
+
+            float strengthOfNo = 0f;
+            if (!canBeUsed)
+            {
+                strengthOfNo = BorealisCooldownSystem.BorealisCooldownTimer /
+                               (float)BorealisCooldownSystem.BOREALIS_COOLDOWN;
+            }
+            if (!canAfford)
+            {
+                strengthOfNo = 1f;
+            }
+            //Vector2 vector = value.Size() * inventoryScale;
+            float scale = Main.inventoryScale;//ItemSlot.DrawItemIcon(item, context, spriteBatch, position + vector / 2f, inventoryScale, 32f, color);
+            Vector2 position2 = position + value.Size() * inventoryScale / 2f - TextureAssets.Cd.Value.Size() * inventoryScale / 2f;
+            Color color3 = item.GetAlpha(color) * strengthOfNo;
+            spriteBatch.Draw(TextureAssets.Cd.Value, position2, (Rectangle?)null, color3, 0f, default(Vector2), scale, (SpriteEffects)0, 0f);
+        }
+    }
+
+
     private const int ITEM_TIME = 16;
     public override void SetDefaults()
     {
@@ -31,7 +78,7 @@ public class Borealis : ModItem
         Item.noUseGraphic = true;
         Item.noMelee = true;
         Item.knockBack = 15;
-        Item.shoot = ModContent.ProjectileType<RodFromGod>();
+        Item.shoot = ModContent.ProjectileType<BorealisReticle>();
         SoundStyle sound = SoundID.Mech;
         sound = sound.WithPitchOffset(-0.4f);
         Item.UseSound = sound;
@@ -46,7 +93,7 @@ public class Borealis : ModItem
             RelogicedUtil.GetPriceTooltip(FirePrice, "Items.Borealis.FirePrice"));
     }
 
-    public readonly long FirePrice = Item.buyPrice(platinum: 1);
+    public static readonly long FirePrice = Item.buyPrice(platinum: 1);
 
     public override void HoldItem(Player player)
     {
@@ -73,7 +120,7 @@ public class Borealis : ModItem
             SoundEngine.PlaySound(SoundID.MaxMana);
             for (int i = 0; i < 5; i++)
             {
-                int num = Dust.NewDust(player.position, player.width, player.height, 45, 0f, 0f, 255, default(Color), (float)Main.rand.Next(20, 26) * 0.1f);
+                int num = Dust.NewDust(player.position, player.width, player.height, DustID.ManaRegeneration, 0f, 0f, 255, default(Color), (float)Main.rand.Next(20, 26) * 0.1f);
                 Main.dust[num].noLight = true;
                 Main.dust[num].noGravity = true;
                 Dust obj = Main.dust[num];
@@ -103,8 +150,7 @@ public class Borealis : ModItem
 
     public override bool CanShoot(Player player)
     {
-        return true;
-        return player.CanAfford(FirePrice) && BorealisCooldownSystem.IsRodFromGodAvailable() && player.ownedProjectileCounts[ModContent.ProjectileType<BorealisReticle>()] == 0;
+        return player.CanAfford(FirePrice) && BorealisCooldownSystem.IsRodFromGodAvailable() && player.ownedProjectileCounts[Item.shoot] == 0;
     }
 
     public override void ModifyWeaponCrit(Player player, ref float crit)
@@ -125,12 +171,32 @@ public class Borealis : ModItem
         if (!player.BuyItem(FirePrice))
             return false;
         NetworkHelper.Borealis_PutOnCooldown();
+        
         Projectile.NewProjectile(
-            player.GetSource_ItemUse(Item),
+            source,
             position, velocity, type, damage, knockback, player.whoAmI,
             ai0: player.GetWeaponAttackSpeed(Item) * ITEM_TIME / (float)Item.useTime
         );
         return false;
+    }
+}
+
+public class BorealisPlayer : ModPlayer
+{
+    public override void PostItemCheck()
+    {
+        Item item = Player.HeldItem;
+        if (Player.cursorItemIconEnabled || !string.IsNullOrEmpty(Player.cursorItemIconText) || item.IsAir || item.type != ModContent.ItemType<Borealis>()) return;
+        bool canAfford = Player.CanAfford(Borealis.FirePrice);
+        bool canUse = BorealisCooldownSystem.BorealisCanBeUsed;
+        if (canAfford && canUse) return;
+        Player.cursorItemIconEnabled = true;
+        //Player.cursorItemIconPush = 0;
+        int tMinus = (int)((BorealisCooldownSystem.BorealisCooldownTimer - 1) / 60 + 1);
+        Player.cursorItemIconText = !canAfford
+            ? RelogicedUtil.GetPriceTooltip(Borealis.FirePrice, "Items.Borealis.FirePrice").GetLine(0)
+            : Relogiced.Instance.GetLocalization("Items.Borealis.OnCooldown").WithFormatArgs(tMinus).Value;
+        Player.cursorItemIconID = -1;//ModContent.ItemType<CoolDownIcon>();
     }
 }
 

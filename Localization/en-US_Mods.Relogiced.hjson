@@ -281,6 +281,12 @@ Items: {
 		DisplayName: Borealis
 		Tooltip: Summon your very own impending doom!
 		FirePrice: Costs {0} to fire
+		OnCooldown: On cooldown for {0} seconds
+	}
+
+	CoolDownIcon: {
+		DisplayName: Cool Down Icon
+		Tooltip: ""
 	}
 }
 

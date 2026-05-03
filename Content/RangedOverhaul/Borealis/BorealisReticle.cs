@@ -63,7 +63,6 @@ public class BorealisReticle : ModProjectile
         return false;
     }
 
-    //TODO: WHY WONT IT SPAWN IN MP??
     public override void OnKill(int timeLeft)
     {
         for (int i = 0; i < 16; i++)
@@ -89,26 +88,30 @@ public class BorealisReticle : ModProjectile
             );
             dust.noGravity = true;
         }
-        if (timeLeft == 0 && Main.myPlayer == Projectile.owner)
+        
+        if (timeLeft >= 0 && Main.netMode != NetmodeID.MultiplayerClient)
         {
-            ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral("recognized dead, make proj"), Color.White);
             Projectile.NewProjectile(
                 Projectile.GetSource_Death(),
                 Projectile.Center,
                 Vector2.UnitY * Projectile.velocity.Length(),
                 ModContent.ProjectileType<RodFromGod>(),
                 Projectile.damage,
-                Projectile.knockBack,
-                Owner: Projectile.owner
+                Projectile.knockBack
             );
         }
     }
 
+    public override void OnSpawn(IEntitySource source)
+    {
+        ActualTime = TIME;
+    }
+
     public override bool PreAI()
     {
-        if (BorealisNoDupeSystem.HasUpdated && Main.netMode != NetmodeID.MultiplayerClient)
+        if (BorealisNoDupeSystem.HasUpdated)
         {
-            Projectile.timeLeft = 60;
+            Projectile.timeLeft = -200;
             Projectile.Kill();
             return false;
         }
@@ -118,14 +121,17 @@ public class BorealisReticle : ModProjectile
 
     public override void AI()
     {
-        if ((int)Projectile.localAI[0] == 5 && Projectile.owner == Main.myPlayer)
+        if ((int)Projectile.localAI[0] == 5)
         {
-            SoundStyle sound = SoundID.Item35;
-            sound = sound.WithPitchOffset(3f);
-            SoundEngine.PlaySound(sound);
-            sound = SoundID.Item35;
-            sound = sound.WithPitchOffset(-0.5f);
-            SoundEngine.PlaySound(sound);
+            if (Projectile.owner == Main.myPlayer)
+            {
+                SoundStyle sound = SoundID.Item35;
+                sound = sound.WithPitchOffset(3f);
+                SoundEngine.PlaySound(sound);
+                sound = SoundID.Item35;
+                sound = sound.WithPitchOffset(-0.5f);
+                SoundEngine.PlaySound(sound);
+            }
             if (AttackSpeed != 0)
             {
                 ActualTime = (int)(Projectile.timeLeft / AttackSpeed);
@@ -150,6 +156,10 @@ public class BorealisReticle : ModProjectile
             }
         }
 
+        Projectile.localAI[0]++;
+        
+        if (Projectile.timeLeft > ActualTime)
+            return;
         int radius = Main.rand.NextBool() ? 33 : 59;
         Dust dust = Dust.NewDustPerfect(
             Projectile.Center + Main.rand.NextVector2CircularEdge(radius, radius),
@@ -161,15 +171,13 @@ public class BorealisReticle : ModProjectile
 
         float delta = 1f - Projectile.timeLeft / (float)ActualTime;
         Projectile.rotation += AttackSpeed * AttackSpeed * (0.01f + 0.04f * delta * delta);
-
-        Projectile.localAI[0]++;
     }
 
     public override bool PreDraw(ref Color lightColor)
     {
         if (Projectile.timeLeft > ActualTime)
             return false;
-        Color alpha = GetAlpha(lightColor).GetValueOrDefault(lightColor);
+        Color alpha = Projectile.GetAlpha(lightColor);
         const int MAX_COUNT = 12;
         int count = Math.Min((MAX_COUNT + 1) * Projectile.timeLeft / ActualTime, MAX_COUNT);
         float fadeOut = (MAX_COUNT + 1) * Projectile.timeLeft / (float)ActualTime - count;
@@ -189,9 +197,10 @@ public class BorealisReticle : ModProjectile
                 dist -= 16 * fadeOutDelta * fadeOutDelta;
                 alf *= 1f - fadeOutDelta;
             }
+
             Vector2 pos = Projectile.Center + Projectile.scale * dist * dir.ToRotationVector2()
                 - Main.screenPosition + new Vector2(0f, Projectile.gfxOffY);
-            Rectangle frame = texAsset.Frame(2, 1, 1, sizeOffsetX: -4);
+            Rectangle frame = texAsset.Frame(2, 1, 1, sizeOffsetX: -4, sizeOffsetY: -2);
             Vector2 origin = frame.Size() / 2f;
         
             Main.EntitySpriteDraw(

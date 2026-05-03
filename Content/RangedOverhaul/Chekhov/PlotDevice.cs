@@ -29,11 +29,7 @@ public class PlotDevice : ModProjectile
 
     public Vector2 Origin = Vector2.Zero;
 
-    public float Delta
-    {
-        get => Projectile.ai[1];
-        set => Projectile.ai[1] = value;
-    }
+    public ref float Delta => ref Projectile.ai[1];
 
     public int CopyExtraUpdatesType => (int)Projectile.ai[2];
     public bool DamageWindow = false;
