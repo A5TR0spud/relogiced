@@ -1,4 +1,7 @@
 using System;
+using System.CodeDom;
+using System.Reflection;
+using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -12,10 +15,6 @@ namespace Relogiced.Content.Other.Lighting;
 public class LightingRework : ModSystem
 {
 	private const float CUTOFF = 0.0185f;
-    public override bool IsLoadingEnabled(Mod mod)
-    {
-        return Relogiced.ConfigClient.LightingRework;
-    }
     
     public override void Load()
     {
@@ -43,11 +42,11 @@ public class LightingRework : ModSystem
 	    try
 	    {
 			ILCursor c = new ILCursor(il);
-			c.GotoNext(i => i.MatchLdarg0());
+			c.EmitDelegate(() => Relogiced.ConfigClient.LightingRework);
 			ILCursor c2 = new ILCursor(il);
-			c2.GotoNext(MoveType.After, i => i.MatchRet());
-			c2.Index--;
-			c.RemoveRange(c2.Index - c.Index);
+			c2.GotoNext(i => i.MatchLdarg0());
+			c2.GotoNext(i => i.MatchCall<LightMap>("BlurPass"));
+			c.Emit(OpCodes.Brfalse_S, c2.Prev);
 			c.Emit(OpCodes.Ldarg_0);
 			c.Emit(OpCodes.Ldarg_0);
 			c.Emit<LightMap>(OpCodes.Ldflda, "_colors");
@@ -63,7 +62,8 @@ public class LightingRework : ModSystem
 			c.Emit<LightMap>(OpCodes.Call, "get_LightDecayThroughHoney");
 			c.Emit(OpCodes.Ldarg_0);
 			c.Emit<LightMap>(OpCodes.Ldfld, "_random");
-			c.EmitDelegate((LightMap self, ref Vector3[] colors, LightMaskMode[] mask,
+			c.EmitDelegate
+			((LightMap self, ref Vector3[] colors, LightMaskMode[] mask,
 				float decayAir, float decaySolid, Vector3 decayWater, Vector3 decayHoney,
 				FastRandom random) =>
 			{
@@ -77,7 +77,8 @@ public class LightingRework : ModSystem
 				random.NextSeed();
 				colors = colorsCopy;
 				return;
-
+				//TODO: avoid unstable raycasting. light with different approach?
+				//TODO: light scattering?
 				void GetLightsPass()
 				{
 					lightsCount = 0;
@@ -201,6 +202,7 @@ public class LightingRework : ModSystem
 				Point PositionOf(int index) => new (index / self.Height, index % self.Height);
 				float LengthSquaredOf(Point p) => p.X*p.X+p.Y*p.Y;
 			});
+			c.Emit(OpCodes.Ret);
 	    }
 	    catch
 	    {

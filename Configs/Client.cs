@@ -8,9 +8,9 @@ public class Client : ModConfig
     public override ConfigScope Mode => ConfigScope.ClientSide;
     
     [Header("Experiments")]
-    [ReloadRequired] [DefaultValue(false)]
+    [DefaultValue(false)]
     public bool LightingRework;
-    [ReloadRequired] [DefaultValue(false)]
+    [DefaultValue(false)]
     public bool LightingCompensation;
 
     [Header("Other")]

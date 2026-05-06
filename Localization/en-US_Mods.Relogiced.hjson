@@ -56,11 +56,11 @@ Configs: {
 		NewNoveltyItems: {
 			Label: New Novelty Items
 			Tooltip:
-                '''
-                Add new items that serve no function, at least on their own.
-                (the only current item is clicky button, which is also added
-                by the rods from god item in the ranged config)
-                '''
+				'''
+				Add new items that serve no function, at least on their own.
+				(the only current item is clicky button, which is also added
+				by the rods from god item in the ranged config)
+				'''
 		}
 	}
 
@@ -86,7 +86,8 @@ Configs: {
 			Tooltip:
 				'''
 				Makes certain lights brighter or dimmer, to compensate for
-				questionable vanilla code regarding luminosity.
+				vanilla code not recognizing the difference between value
+				and luminosity.
 				'''
 		}
 

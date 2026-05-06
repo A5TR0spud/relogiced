@@ -24,6 +24,8 @@ public class AntiGravHookPlayer : ModPlayer
         IL_Player.GetGrapplingForces -= AntiGravityHookHook;
     }
 
+    //TODO: metaballs instead of circles
+    //TODO: VFX
     private void AntiGravityHookHook(ILContext il)
     {
         try
@@ -33,7 +35,7 @@ public class AntiGravHookPlayer : ModPlayer
             cursor.GotoNext(i => i.MatchLdloc(10));
             cursor.GotoNext(i => i.MatchLdfld<Terraria.Projectile>("type"));
             cursor.GotoNext(i => i.MatchLdcI4(446));
-            //^ Locating "if (projectile.type == 446)" (anti-gravity hook)
+            //^ Locating "if (projectile.type == 446)" (antigravity hook)
             cursor.Index++; // Move cursor to after that check rather than inside it
             cursor.Index++; // Move cursor to inside if statement, past "bne.un IL_0191"
             ILCursor cursor2 = new ILCursor(il);
@@ -57,7 +59,7 @@ public class AntiGravHookPlayer : ModPlayer
                     return target;
                 }
                 int closeID = proj.identity;
-                //it sucks to place a for loop in a for loop but i don't have many options and even though this is n^2, n is 3.
+                //it sucks to place a for loop in a for loop, but I don't have many options and even though this is n^2, n is 3.
                 for (int i = 0; i < player.grapCount; i++)
                 {
                     Projectile iHook = Main.projectile[player.grappling[i]];

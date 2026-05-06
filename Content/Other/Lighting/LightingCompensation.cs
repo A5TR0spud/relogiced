@@ -8,11 +8,6 @@ namespace Relogiced.Content.Other.Lighting;
 
 public class LightingCompensation : ModSystem
 {
-    public override bool IsLoadingEnabled(Mod mod)
-    {
-        return Relogiced.ConfigClient.LightingCompensation;
-    }
-
     public override void Load()
     {
         On_LegacyLighting.AddLight += On_LegacyLightingOnAddLight;
@@ -25,16 +20,18 @@ public class LightingCompensation : ModSystem
         On_LightingEngine.AddLight -= On_LightingEngineOnAddLight;
     }
 
-    private void On_LegacyLightingOnAddLight(On_LegacyLighting.orig_AddLight orig, LegacyLighting self, int x, int y, Vector3 color)
+    private void On_LegacyLightingOnAddLight(On_LegacyLighting.orig_AddLight orig, LegacyLighting self, int x, int y,
+        Vector3 color)
     {
-        if (Terraria.Lighting.Mode is LightMode.Color)
+        if (Relogiced.ConfigClient.LightingCompensation && Terraria.Lighting.Mode is LightMode.Color)
             color = ProcessLight(color);
         orig(self, x, y, color);
     }
-    
-    private void On_LightingEngineOnAddLight(On_LightingEngine.orig_AddLight orig, LightingEngine self, int x, int y, Vector3 color)
+
+    private void On_LightingEngineOnAddLight(On_LightingEngine.orig_AddLight orig, LightingEngine self, int x, int y,
+        Vector3 color)
     {
-        if (Terraria.Lighting.Mode is LightMode.Color)
+        if (Relogiced.ConfigClient.LightingCompensation && Terraria.Lighting.Mode is LightMode.Color)
             color = ProcessLight(color);
         orig(self, x, y, color);
     }
@@ -50,17 +47,20 @@ public class LightingCompensation : ModSystem
         color *= 0.707106781187f;
         Vector3 newColor = color * GetValue(color) / lumen;
         Vector3 blownOutColor = Clamp(newColor);
+        //TODO: account for different weights and nonlinearity between channels
         Vector3 overflow = newColor - blownOutColor;
         if (overflow.X > 0)
         {
             blownOutColor.Y += 0.5f * overflow.X;
             blownOutColor.Z += 0.5f * overflow.X;
         }
+
         if (overflow.Y > 0)
         {
             blownOutColor.X += 0.5f * overflow.Y;
             blownOutColor.Z += 0.5f * overflow.Y;
         }
+
         if (overflow.Z > 0)
         {
             blownOutColor.Y += 0.5f * overflow.Z;
@@ -93,12 +93,24 @@ public class LightingCompensation : ModSystem
             Math.Max(color.Y, color.Z)
         );
 
-    public static float GetLuminance(Vector3 color) =>
-        (float)Math.Sqrt(
+    public static float GetLuminance(Vector3 color)
+    {
+        return (float)Math.Sqrt(
             R_LUMEN * (color.X * color.X)
             + G_LUMEN * (color.Y * color.Y)
             + B_LUMEN * (color.Z * color.Z)
         );
+        /*const float HUE_SHIFT = 0.45f;
+        const float ONE_MINUS_HUE_SHIFT = 1f - HUE_SHIFT;
+        float weightedRed = ONE_MINUS_HUE_SHIFT * color.X + HUE_SHIFT * color.Z;
+        float weightedBlue = ONE_MINUS_HUE_SHIFT * color.Z + HUE_SHIFT * color.Y;
+        if (weightedRed > 0 && weightedBlue > 0)
+        {
+            float purpleness = (Math.Min(weightedRed, weightedBlue) - color.Y) / Math.Max(weightedRed, weightedBlue);
+            purpleness = Math.Clamp(purpleness, 0, 1);
+            standart *= 1f - 0.15f * purpleness;
+        }*/
+    }
 }
 
 public class LightingCompTile : GlobalTile
