@@ -49,7 +49,6 @@ public abstract class VoodooDollItem : ModItem
         Item.rare = ItemRarityID.Blue;
     }
 
-    //TODO: verify this works instead of the old system
     public override void UpdateInventory(Player player)
     {
         ModVoodooPlayer plr = player.GetModPlayer<ModVoodooPlayer>();

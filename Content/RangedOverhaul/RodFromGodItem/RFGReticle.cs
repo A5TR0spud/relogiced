@@ -13,6 +13,11 @@ namespace Relogiced.Content.RangedOverhaul.RodFromGodItem;
 
 public class RFGNoDupeSystem : ModSystem
 {
+    public override bool IsLoadingEnabled(Mod mod)
+    {
+        return RodFromGodItem.IsEnabled;
+    }
+
     internal static bool HasUpdated = false;
     public override void PreUpdateProjectiles()
     {
@@ -24,6 +29,11 @@ public class RFGNoDupeSystem : ModSystem
 
 public class RFGReticle : ModProjectile
 {
+    public override bool IsLoadingEnabled(Mod mod)
+    {
+        return RodFromGodItem.IsEnabled;
+    }
+
     private static Asset<Texture2D> texAsset;
 
     public override void SetStaticDefaults()

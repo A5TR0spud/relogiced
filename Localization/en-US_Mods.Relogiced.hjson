@@ -52,6 +52,16 @@ Configs: {
 				for crafting and a new item allows easy graveyard loot.
 				'''
 		}
+
+		NewNoveltyItems: {
+			Label: New Novelty Items
+			Tooltip:
+                '''
+                Add new items that serve no function, at least on their own.
+                (the only current item is clicky button, which is also added
+                by the rods from god item in the ranged config)
+                '''
+		}
 	}
 
 	Client: {
@@ -187,16 +197,37 @@ Configs: {
 
 	RangedOverhaul: {
 		DisplayName: Ranged Overhaul
-		Headers.Items: Items Header
+		Headers.Items: Items
 
 		Chekhov: {
-			Label: Chekhov
-			Tooltip: ""
+			Label: "[item:Relogiced/Chekhov] Enable Chekhov"
+			Tooltip:
+				'''
+				Enables a high damage passive inventory item which fires
+				sporadically on its own. It can be obtained pre-hardmode,
+				and becomes harder to obtain once hardmode begins. Its
+				effect only triggers during hardmode.
+				'''
 		}
 
 		RodFromGodItem: {
-			Label: Rod From God Item
-			Tooltip: ""
+			Label: '''[item:Relogiced/RodFromGodItem] Enable "Rods From God" Item'''
+			Tooltip:
+				'''
+				Enables a post-Moon Lord item which deals ludicrous damage,
+				has a 30 second wind-up, 90 second total cooldown, and
+				costs 1 platinum to fire.
+				'''
+		}
+	}
+
+	SummonOverhaul: {
+		DisplayName: Summon
+		Headers.Items: Items
+
+		MoveSnapthorn: {
+			Label: Move Snapthorn
+			Tooltip: Moves Snapthorn from crafting to a Witch Doctor purchase.
 		}
 	}
 }
@@ -289,9 +320,9 @@ Items: {
 		OnCooldown: On cooldown for {0} seconds
 	}
 
-	CoolDownIcon: {
-		DisplayName: Cool Down Icon
-		Tooltip: ""
+	ClickyButton: {
+		DisplayName: Clicky Button
+		Tooltip: "'Clicky clacky'"
 	}
 }
 
@@ -309,8 +340,9 @@ Projectiles: {
 	LostWisp.DisplayName: Will-o'-the-wisp
 	PlotDevice.DisplayName: Plot Device
 	ChekhovVisualizer.DisplayName: Chekhov Indicator
-	RodFromGod.DisplayName: Rod From God
-	RFGReticle.DisplayName: Rod From God Reticle
+	RodFromGod.DisplayName: Orbituary
+	//get it?
+	RFGReticle.DisplayName: Orbital Omen
 }
 
 Buffs: {

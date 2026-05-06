@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
+using Relogiced.Content.Items.Abstracts;
+using Relogiced.Content.Items.NewNoveltyItems;
 using Relogiced.Other;
 using Terraria;
 using Terraria.Audio;
@@ -13,17 +15,16 @@ using Terraria.UI;
 
 namespace Relogiced.Content.RangedOverhaul.RodFromGodItem;
 
-public class RodFromGodItem : ModItem
+public class RodFromGodItem : HandheldButtonItem
 {
-    internal static Asset<Texture2D> HeldItemAsset;
-    internal static Asset<Texture2D> HeldItemAssetGlow;
-
-    public override void SetStaticDefaults()
+    public static bool IsEnabled => Relogiced.ConfigRangedOverhaul.RodFromGodItem;
+    public override bool IsLoadingEnabled(Mod mod)
     {
-        HeldItemAsset = ModContent.Request<Texture2D>(Texture + "_Held");
-        HeldItemAssetGlow = ModContent.Request<Texture2D>(Texture + "_Held_Glow");
+        return IsEnabled;
     }
-    
+    public override bool UseHeavySound() => true;
+    public override bool UseGlowMask() => true;
+
     public override void Load()
     {
         On_ItemSlot.Draw_SpriteBatch_ItemArray_int_int_Vector2_Color += On_ItemSlotOnDraw_SpriteBatch_ItemArray_int_int_Vector2_Color;
@@ -71,21 +72,26 @@ public class RodFromGodItem : ModItem
         }
     }
 
+    public override void AddRecipes()
+    {
+        Recipe.Create(Type)
+            .AddIngredient(ModContent.ItemType<ClickyButton>())
+            .AddIngredient(ItemID.VoidMonolith, 3)
+            .AddIngredient(ItemID.FragmentVortex, 10)
+            .AddIngredient(ItemID.Nanites, 10)
+            .AddTile(TileID.LunarCraftingStation)
+            .Register();
+    }
 
     private const int ITEM_TIME = 16;
     public override void SetDefaults()
     {
+        base.SetDefaults();
         Item.damage = 15000;
         Item.crit = 96;
         Item.DamageType = DamageClass.Ranged;
-        Item.useStyle = -1;
         Item.autoReuse = false;
         Item.useAnimation = Item.useTime = ITEM_TIME;
-        Item.holdStyle = ItemHoldStyleID.HoldRadio;
-        Item.width = 32;
-        Item.height = 20;
-        Item.noUseGraphic = true;
-        Item.noMelee = true;
         Item.knockBack = 15;
         Item.shoot = ModContent.ProjectileType<RFGReticle>();
         SoundStyle sound = SoundID.Mech;
@@ -202,6 +208,11 @@ public class RodFromGodItem : ModItem
 
 public class RodFromGodItemPlayer : ModPlayer
 {
+    public override bool IsLoadingEnabled(Mod mod)
+    {
+        return RodFromGodItem.IsEnabled;
+    }
+
     public override void PostItemCheck()
     {
         Item item = Player.HeldItem;
@@ -221,6 +232,11 @@ public class RodFromGodItemPlayer : ModPlayer
 
 public class RodFromGodCooldownSystem : ModSystem
 {
+    public override bool IsLoadingEnabled(Mod mod)
+    {
+        return RodFromGodItem.IsEnabled;
+    }
+    
     internal static uint RodFromGodCooldownTimer = 0;
     internal const uint ROD_FROM_GOD_COOLDOWN = 60 * 90;
 
@@ -257,61 +273,5 @@ public class RodFromGodCooldownSystem : ModSystem
     public override void PostUpdatePlayers()
     {
         PlayRefreshSoundThisTick = false;
-    }
-}
-
-public class RodFromGodItemDrawPlayer : PlayerDrawLayer
-{
-    public override Position GetDefaultPosition()
-    {
-        return new Multiple()
-        {
-            { new Between(PlayerDrawLayers.JimsDroneRadio, PlayerDrawLayers.Shield), drawinfo => drawinfo.drawPlayer.itemAnimation == 0 },
-            
-            { new Between(PlayerDrawLayers.ProjectileOverArm, PlayerDrawLayers.FrozenOrWebbedDebuff), drawinfo => drawinfo.drawPlayer.itemAnimation != 0 }
-        };
-    }
-
-    protected override void Draw(ref PlayerDrawSet drawInfo)
-    {
-        if (drawInfo.drawPlayer.HeldItem.type == ModContent.ItemType<RodFromGodItem>())
-        {
-            Rectangle bodyFrame = drawInfo.drawPlayer.bodyFrame;
-            Texture2D value = RodFromGodItem.HeldItemAsset.Value;
-            Vector2 pos = new Vector2(
-                              (float)((int)(drawInfo.Position.X - Main.screenPosition.X -
-                                          (float)(drawInfo.drawPlayer.bodyFrame.Width / 2) +
-                                          (float)(drawInfo.drawPlayer.width / 2)) +
-                                      drawInfo.drawPlayer.direction * 2),
-                              (float)(int)(drawInfo.Position.Y - Main.screenPosition.Y +
-                                  (float)drawInfo.drawPlayer.height -
-                                  (float)drawInfo.drawPlayer.bodyFrame.Height + 4f + 14f)) +
-                          drawInfo.drawPlayer.bodyPosition +
-                          new Vector2((float)(drawInfo.drawPlayer.bodyFrame.Width / 2),
-                              (float)(drawInfo.drawPlayer.bodyFrame.Height / 2));
-            DrawData item = new DrawData(
-                value,
-                pos,
-                bodyFrame,
-                drawInfo.colorArmorLegs,
-                drawInfo.drawPlayer.legRotation,
-                drawInfo.legVect,
-                1f,
-                drawInfo.playerEffect);
-            item.shader = drawInfo.cWaist;
-            drawInfo.DrawDataCache.Add(item);
-            value = RodFromGodItem.HeldItemAssetGlow.Value;
-            DrawData item2 = new DrawData(
-                value,
-                pos,
-                bodyFrame,
-                Color.White,
-                drawInfo.drawPlayer.legRotation,
-                drawInfo.legVect,
-                1f,
-                drawInfo.playerEffect);
-            item2.shader = drawInfo.cWaist;
-            drawInfo.DrawDataCache.Add(item2);
-        }
     }
 }

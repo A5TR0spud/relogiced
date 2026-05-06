@@ -55,6 +55,7 @@ public class NetworkHelper : ModSystem
 
     private static void Send_RFGCooldown(bool nowUsable, int ignoreClient = -1)
     {
+        if (!RodFromGodItem.IsEnabled) return;
         RodFromGodCooldownSystem.SetState(nowUsable);
         if (Main.netMode == NetmodeID.SinglePlayer) return;
         ModPacket myPacket = NewPacket(ID_RFGCooldown);
@@ -65,6 +66,7 @@ public class NetworkHelper : ModSystem
     private static void Handle_RFGCooldown(BinaryReader reader, int senderWhoAmI)
     {
         bool nowUsable = reader.ReadBoolean();
+        if (!RodFromGodItem.IsEnabled) return;
         RodFromGodCooldownSystem.SetState(nowUsable);
         if (Main.netMode == NetmodeID.Server)
             Send_RFGCooldown(nowUsable, senderWhoAmI);

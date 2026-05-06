@@ -22,6 +22,9 @@ public class Assorted : ModConfig
     
     [ReloadRequired] [DefaultValue(true)]
     public bool ConditionFillers;
+    
+    [ReloadRequired] [DefaultValue(true)]
+    public bool NewNoveltyItems;
 
     [Header("Other")]
     [ReloadRequired] [DefaultValue(true)]

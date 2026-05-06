@@ -13,6 +13,11 @@ namespace Relogiced.Content.RangedOverhaul.RodFromGodItem;
 
 public class RodFromGod : ModProjectile
 {
+    public override bool IsLoadingEnabled(Mod mod)
+    {
+        return RodFromGodItem.IsEnabled;
+    }
+
     public ref float HighestSpeed => ref Projectile.ai[0];
     public float SpeedScalar => Speed / HighestSpeed;
 
@@ -95,6 +100,25 @@ public class RodFromGod : ModProjectile
         hitbox.Inflate(fireball, fireball / 4);
     }
 
+    public override bool? CanHitNPC(NPC target)
+    {
+        int realLife = target.realLife;
+        if (realLife >= 0 && realLife < Main.maxNPCs && Projectile.localNPCImmunity[realLife] != 0)
+        {
+            return false;
+        }
+        return null;
+    }
+
+    public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+    {
+        int realLife = target.realLife;
+        if (realLife >= 0 && realLife < Main.maxNPCs)
+        {
+            Projectile.localNPCImmunity[realLife] = Projectile.localNPCHitCooldown;
+        }
+    }
+
     public float olderVelocity = 0;
 
     public override void AI()
@@ -120,6 +144,7 @@ public class RodFromGod : ModProjectile
         int heightSteps = Projectile.height / 32;
         int flipFlop = Projectile.timeLeft % 2;
         List<Point> collisionPoints = [];
+        bool firstOrSecondFrameOfUpdates = Projectile.timeLeft % (Projectile.extraUpdates + 1) <= 1;
         for (int i = 0; i <= widthSteps; i++)
         {
             for (int j = 0; j < heightSteps; j++)
@@ -136,6 +161,9 @@ public class RodFromGod : ModProjectile
                     collidingTiles += weight;
                     t = DustID.Clentaminator_Red;
                     collisionPoints.Add(new Point((int)u / 16, (int)v / 16));
+                    if (firstOrSecondFrameOfUpdates)
+                        //too dim to actually really see but prevents clipping
+                        Lighting.AddLight(new Vector2(u, v), new Vector3(0.05f, 0.075f, 0.1f));
                 }
                 if (!RelogicedUtil.DEBUG_MODE || !Main.rand.NextBool(40))
                     continue;
@@ -166,6 +194,7 @@ public class RodFromGod : ModProjectile
         olderVelocity = Projectile.oldVelocity.Y;
     }
 
+    //TODO: VFX
     private void UpdateFX(float speed, float acceleration, float jerk, List<Point> collisionPoints, float encumberance)
     {
         if (speed < 0) return;
